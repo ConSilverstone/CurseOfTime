@@ -38,4 +38,9 @@ private:
 	int m_currentScore;
 	int m_pendingLoad;
 	bool m_pendingReload;
+
+	//State
+	sf::Vector2f m_velocity;
+	bool m_hasGravity;
+	bool m_touchingGround;
 };

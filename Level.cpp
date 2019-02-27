@@ -21,6 +21,9 @@ Level::Level()
 	, m_levelDiamonds(0)
 	, m_pendingLoad()
 	, m_pendingReload(false)
+	, m_velocity(0.0f, 0.0f)
+	, m_hasGravity(false)
+	, m_touchingGround(false)
 {
 	LoadLevel(1);
 }
