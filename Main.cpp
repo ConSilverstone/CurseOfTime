@@ -9,6 +9,7 @@
 // Project Includes
 #include "Framework/AssetManager.h"
 #include "Level.h"
+#include "Player.h"
 
 // The main() Function - entry point for our program
 int main()
@@ -19,7 +20,7 @@ int main()
 
 	// Window - to draw to the screen
 	sf::RenderWindow gameWindow;
-	gameWindow.create(sf::VideoMode::getDesktopMode(), "Sokoban", sf::Style::Titlebar | sf::Style::Close);
+	gameWindow.create(sf::VideoMode::getDesktopMode(), "Curse of Time", sf::Style::Titlebar | sf::Style::Close);
 
 	// Seed our random number generator 
 	srand(time(NULL));
@@ -32,8 +33,6 @@ int main()
 
 	// Create the game level
 	Level ourLevel;
-
-
 
 	// -----------------------------------------------
 	// Game Loop
@@ -69,7 +68,7 @@ int main()
 
 		// Pass update to level
 		ourLevel.Update(frameTime);
-
+	
 		// -----------------------------------------------
 		// Draw Section
 		// -----------------------------------------------

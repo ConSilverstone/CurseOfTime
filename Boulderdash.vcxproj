@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{8088a501-529d-4f89-93cd-3a09adb1718a}</ProjectGuid>
     <RootNamespace>Boulderdash</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
