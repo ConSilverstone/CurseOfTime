@@ -64,25 +64,25 @@ void Player::Input(sf::Event _gameEvent)
 
 void Player::Update(sf::Time _frameTime)
 {
-	//// IF we have movement waiting to be processed,
-	//if (m_pendingMove.x != 0 || m_pendingMove.y != 0)
-	//{
-	// Move in that direction
-	bool moveSuccessful = AttemptMove(m_pendingMove);
+	// IF we have movement waiting to be processed,
+	if (m_pendingMove.x != 0 || m_pendingMove.y != 0)
+	{
+		// Move in that direction
+		bool moveSuccessful = AttemptMove(m_pendingMove);
 
-	//	if (moveSuccessful == true)
-	//	{
-	//		// Play walking sound
-	//		m_playerMoveSound.play();
-	//	}
-	//	else
-	//	{
-	//		m_playerBumpingSound.play();
-	//	}
-	//	// clear pending move.
-	//	m_pendingMove = sf::Vector2i(0, 0);
+		if (moveSuccessful == true)
+		{
+			// Play walking sound
+			m_playerMoveSound.play();
+		}
+		else
+		{
+			m_playerBumpingSound.play();
+		}
+		// clear pending move.
+		m_pendingMove = sf::Vector2i(0, 0);
 
-	//}
+	}
 }
 
 bool Player::AttemptMove(sf::Vector2i _direction)
