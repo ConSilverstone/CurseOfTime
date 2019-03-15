@@ -24,7 +24,6 @@ Level::Level()
 	, m_velocity(0.0f, 0.0f)
 	, m_hasGravity(false)
 	, m_touchingGround(false)
-	, m_player(nullptr)
 {
 	LoadLevel(1);
 }
@@ -35,7 +34,7 @@ void Level::Draw(sf::RenderTarget & _target)
 	sf::View camera = _target.getDefaultView();
 
 	//Adjust camera as needed
-    camera.setCenter(m_player->getPosition());
+	camera.setCenter(m_background[0].size() * m_cellSize / 2, m_background.size() * m_cellSize / 2);
 
 	// Draw game world to the window
 	_target.setView(camera);
@@ -203,10 +202,6 @@ void Level::LoadLevel(int _levelToLoad)
 		m_background.push_back(std::vector<sf::Sprite>());
 		m_contents.push_back(std::vector<std::vector< GridObject*> >());
 
-		// We need 
-		Player* player = new Player();
-		m_player = player;
-
 		// Read each character one by one from the file...
 		char ch;
 		// Each time, try to read the next character
@@ -240,7 +235,7 @@ void Level::LoadLevel(int _levelToLoad)
 				// Create an empty vector for our grid contents in this cell
 				m_contents[y].push_back(std::vector<GridObject*>());
 
-				if (ch == ' ')
+				if (ch == '-')
 				{
 					// Do nothing - Empty space
 				}
@@ -253,6 +248,7 @@ void Level::LoadLevel(int _levelToLoad)
 				}
 				else if (ch == 'P')
 				{
+					Player* player = new Player();
 					player->SetLevel(this);
 					player->SetGridPosition(x, y);
 					m_contents[y][x].push_back(player);

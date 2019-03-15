@@ -38,7 +38,6 @@ private:
 	int m_currentScore;
 	int m_pendingLoad;
 	bool m_pendingReload;
-	GameObject* m_player;
 
 	//State
 	sf::Vector2f m_velocity;
