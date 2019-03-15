@@ -21,47 +21,6 @@ Player::Player()
 	m_blocksMovement = true;
 }
 
-void Player::Input(sf::Event _gameEvent)
-{
-	// Read the mput from the keyoboard and covert it to a direction 
-	// for the player to move and then move
-
-	// Was the event a key press
-	if (_gameEvent.type == sf::Event::KeyPressed)
-	{
-		// Yes it was a key press!
-
-		// What key was pressed?
-		if (_gameEvent.key.code == sf::Keyboard::W)
-		{
-			// It was W!
-			// Move up
-			m_pendingMove = sf::Vector2i(0, -1);
-		}
-		// What key was pressed?
-		else if (_gameEvent.key.code == sf::Keyboard::S)
-		{
-			// It was S!
-			// Move down
-			m_pendingMove = sf::Vector2i(0, 1);
-		}
-		else if (_gameEvent.key.code == sf::Keyboard::A)
-		{
-			// It was A!
-			// Move down
-			m_pendingMove = sf::Vector2i(-1, 0);
-			m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
-		}
-		else if (_gameEvent.key.code == sf::Keyboard::D)
-		{
-			// It was D!
-			// Move down
-			m_pendingMove = sf::Vector2i(1, 0);
-			m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandRight.png"));
-		}
-	}
-}
-
 void Player::Update(sf::Time _frameTime)
 {
 	// IF we have movement waiting to be processed,
