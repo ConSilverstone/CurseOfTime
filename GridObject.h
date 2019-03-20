@@ -20,9 +20,15 @@ public:
 	sf::Vector2i GetGridPosition();
 	bool GetBlocksMovement();
 
-protected:
+	// Overriding Methods
+	void Update(sf::Time _frameTime);
 
+protected:
+	bool m_blocksMovement;
 	sf::Vector2i m_gridPosition;
 	Level* m_level;
-	bool m_blocksMovement;
+
+	// Moving Objects
+	sf::Vector2f m_velocity; // pixels per second
+	sf::Vector2f m_previousPosition;
 };

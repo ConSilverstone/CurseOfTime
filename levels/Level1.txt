@@ -5,8 +5,8 @@ W - - - - - - - - - - - - W - - - - - - - W - - - - - - - - - - - - W - - - - - 
 W - W W W - - - - - - - - W - - - - - - - W - - - W - - - - W - - - W - - - - - - - - - - - R W
 W - - - W - - - - - - - - - - - - - - - - - - - - W - - - - W - - - W - - - - - - - - - - - R W
 W - - - W R R W W R R R W W W R R R R R W W - - - - W - - - - W - - W - - - - - - - - - - - R W
-W - - - W W W W W W W W W W W W W W W W W W W W R R R R R R R R R R W W W R R R R - - - - - R W
-W - P - W - - - - - - - - R - - W - - - W W W W W W W W W W W W W W W W W W W W W W W - - - R W
+W - P - W W W W W W W W W W W W W W W W W W W W R R R R R R R R R R W W W R R R R - - - - - R W
+W - - - W - - - - - - - - R - - W - - - W W W W W W W W W W W W W W W W W W W W W W W - - - R W
 W W W W W - - - - - - - - - B - W - B - - - - - - - W W W - - - - R - - - R R R - - - - - - R W
 W - - - W - - W - - - - - - W - W - W W W - - R - - W - - - - - - - - - - - - - - - - - - - R W
 W - C - W - - W - - - - - - - - W - - - W - - R - - W - W - - - - - - - - - - - - - - - - - R W

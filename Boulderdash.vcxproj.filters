@@ -57,9 +57,6 @@
     <ClCompile Include="AssetManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MovingObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObject.h">
@@ -99,9 +96,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AssetManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MovingObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

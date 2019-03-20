@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{8088a501-529d-4f89-93cd-3a09adb1718a}</ProjectGuid>
     <RootNamespace>Boulderdash</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -132,7 +132,6 @@
     <ClCompile Include="GridObject.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="MovingObject.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="ResetButton.cpp" />
     <ClCompile Include="SpriteObject.cpp" />
@@ -148,7 +147,6 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GridObject.h" />
     <ClInclude Include="Level.h" />
-    <ClInclude Include="MovingObject.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ResetButton.h" />
     <ClInclude Include="SpriteObject.h" />

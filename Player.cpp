@@ -8,6 +8,9 @@
 # include "Exit.h"
 # include "Boulder.h"
 
+// Constants
+#define SPEED 500.0f
+
 Player::Player()
 	: GridObject()
 	, m_pendingMove(0, 0)
@@ -18,30 +21,39 @@ Player::Player()
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
 	m_playerMoveSound.setBuffer(AssetManager::GetSoundBuffer("audio/footstep1.ogg"));
 	m_playerBumpingSound.setBuffer(AssetManager::GetSoundBuffer("audio/bump.wav"));
-	m_blocksMovement = true;
+	//m_blocksMovement = true;
 }
 
 void Player::Update(sf::Time _frameTime)
 {
-	// IF we have movement waiting to be processed,
-	if (m_pendingMove.x != 0 || m_pendingMove.y != 0)
+	// First, assume no keys are pressed
+	m_velocity.x = 0.0f;
+	m_velocity.y = 0.0f;
+
+	// Use the keyboard function to check 
+	// which keys are currently held down
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 	{
-		// Move in that direction
-		bool moveSuccessful = AttemptMove(m_pendingMove);
-
-		if (moveSuccessful == true)
-		{
-			// Play walking sound
-			m_playerMoveSound.play();
-		}
-		else
-		{
-			m_playerBumpingSound.play();
-		}
-		// clear pending move.
-		m_pendingMove = sf::Vector2i(0, 0);
-
+		m_velocity.y = -SPEED;
 	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+	{
+		m_velocity.x = -SPEED;
+		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+	{
+		m_velocity.y = SPEED;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+	{
+		m_velocity.x = SPEED;
+		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandRight.png"));
+	}
+	// Call the update function manually on 
+	// the parent class
+	// This will actually move the character
+	GridObject::Update(_frameTime);
 }
 
 bool Player::AttemptMove(sf::Vector2i _direction)

@@ -1,16 +1,16 @@
 #pragma once
 
 //Project Includes
-#include "GridObject.h"
 #include "SFML/Audio.hpp"
+#include "GridObject.h"
 
 class Player : public GridObject
 {
 public:
 	Player();
+
 	virtual void Update(sf::Time _frameTime);
 	
-
 private:
 	//Data
 	bool AttemptMove(sf::Vector2i _direction);
