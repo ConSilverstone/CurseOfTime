@@ -1,9 +1,28 @@
-W W W W W W W W W W W W W W W W
-W P R R R B D B W B R R R R B W
-W B R R R R R R W R R B R B D W
-W B B R R B R R R R R B R R R W
-W W W W W W W W R W W W W W W W
-W C R R B D R R R R R B R R R W
-W B B R B B B R W R B B R B R W
-W R R R R R D R W R R R R B D W
-W W W W W W W W W W W W W W W W
+W W W W W W W W W W W W W W W W W W W W W W W W
+W R - - - B - - R - - - R R R R - - - - - - - W
+W R - - - B - - R - - - R - - R - - - - - C - W
+W R - - - B - - R R - - R - - R - - R R - - - W
+W R - W W W W W R W W W R W W R W W W W W W W W
+W R - W - - - - R - - - R R W R - - - - - - W W
+W R - W - - - - R - - - R - W R - - - - - - W W
+W R - W - B - - R - - - R - W R - - - W - - W W
+W R - W W W - W R W W W R - W R - - - W - - - W
+W R - - W - - - R W - - R - W R - - - W - - - W
+W R - - W - - - R W - - R - W R R - R W - - - W
+W R - - W - - - R W - - R - W R W - W W W - - W
+W R - - W - - - R W - - R - W R - - - W W - - W
+W R - - W - - - R W - - R - W R - - - W - - - W
+W R - - W - - - R W - - R - W R - W - W - - - W
+W R - - W - B - R W - - R - W R - W - W - - - W
+W R - - W W W - R W - W R W W R - W - W - - W W
+W R - - W R W - R W - - R R R R - W - W - - W W
+W R - - - R - - R W - W W W W R W W - W - - - W
+W R W W W R - - R W - - - - - R - - - W - - - W
+W R R R W R - - R W - - - - - R - - - W - - - W
+W W W R W R - - R W - - - - - R - - - W W - W W
+W W W R R R R R R W R R B R - R - - B W W - W W
+W W W W W R W W R W W W W W W R W W W W - - W W
+W - - - - R - - R R R R R R R R - B - - - - - W
+W - - - - R - - R W W W W W W R W W - - - - - W
+W - P - - R - - R - - - - - - R - - - - - - - W
+W W W W W R W W R W W W W W W R W W W W W W W W
