@@ -40,6 +40,9 @@ private:
 	bool m_pendingReload;
 	GameObject* m_player;
 
+	// GameObject Lists
+	std::vector<std::pair<GameObject*, GameObject*> > m_collisionList;
+
 	//State
 	sf::Vector2f m_velocity;
 	bool m_hasGravity;

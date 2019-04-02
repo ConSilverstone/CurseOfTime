@@ -25,6 +25,7 @@ Level::Level()
 	, m_hasGravity(false)
 	, m_touchingGround(false)
 	, m_player(nullptr)
+	, m_collisionList()
 {
 	LoadLevel(1);
 }
@@ -102,6 +103,22 @@ void Level::Update(sf::Time _frameTime)
 		//Set pending load to false
 		m_pendingLoad = 0;
 	}
+
+	// Collision detection
+	for (int i = 0; i < m_collisionList.size(); ++i)
+	{
+
+		GameObject* handler = m_collisionList[i].first;
+		GameObject* collider = m_collisionList[i].second;
+
+		if (handler->IsActive() && collider->IsActive())
+		{
+			if (handler->GetBounds().intersects(collider->GetBounds()))
+			{
+				handler->Collide(*collider);
+			}
+		}
+	}
 }
 
 void Level::Input(sf::Event _gameEvent)
@@ -153,6 +170,7 @@ void Level::Input(sf::Event _gameEvent)
 	//////////////////////////////////////////////////////
 }
 
+
 void Level::LoadLevel(int _levelToLoad)
 {
 	// Clean up the old level
@@ -175,6 +193,7 @@ void Level::LoadLevel(int _levelToLoad)
 	// Clear out our lists
 	m_background.clear();
 	m_contents.clear();
+	m_collisionList.clear();
 
 	// Create a buffer for loading the next level
 
@@ -203,7 +222,7 @@ void Level::LoadLevel(int _levelToLoad)
 		m_background.push_back(std::vector<sf::Sprite>());
 		m_contents.push_back(std::vector<std::vector< GridObject*> >());
 
-		// We need 
+		// Create the player first as other objects will need to reference it
 		Player* player = new Player();
 		m_player = player;
 
@@ -250,12 +269,14 @@ void Level::LoadLevel(int _levelToLoad)
 					wall->SetLevel(this);
 					wall->SetGridPosition(x, y);
 					m_contents[y][x].push_back(wall);
+					m_collisionList.push_back(std::make_pair(player, wall));
 				}
 				else if (ch == 'P')
 				{
 					player->SetLevel(this);
 					player->SetGridPosition(x, y);
 					m_contents[y][x].push_back(player);
+					m_player = player;
 				}
 				else if (ch == 'R')
 				{
