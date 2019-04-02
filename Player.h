@@ -37,8 +37,10 @@ public:
 
 private:
 	//Data
-	bool AttemptMove(sf::Vector2i _direction);
 	sf::Sound m_playerMoveSound;
 	sf::Sound m_playerBumpingSound;
 	sf::Vector2i m_pendingMove;
+
+	//State
+	bool m_touchingGround;
 };

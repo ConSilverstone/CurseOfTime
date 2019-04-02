@@ -11,12 +11,15 @@
 
 // Constants
 #define SPEED 500.0f
+#define JUMP_SPEED -1500.0f
+#define GRAVITY 2000.0f
 
 Player::Player()
 	: GridObject()
 	, m_pendingMove(0, 0)
 	, m_playerMoveSound()
 	, m_playerBumpingSound()
+	, m_touchingGround(false)
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
 	m_playerMoveSound.setBuffer(AssetManager::GetSoundBuffer("audio/footstep1.ogg"));
@@ -28,13 +31,12 @@ void Player::Update(sf::Time _frameTime)
 {
 	// First, assume no keys are pressed
 	m_velocity.x = 0.0f;
-	m_velocity.y = 0.0f;
 
 	// Use the keyboard function to check 
 	// which keys are currently held down
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingGround)
 	{
-		m_velocity.y = -SPEED;
+		m_velocity.y = JUMP_SPEED;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 	{
@@ -50,6 +52,14 @@ void Player::Update(sf::Time _frameTime)
 		m_velocity.x = SPEED;
 		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandRight.png"));
 	}
+
+	//Apply gravity to our velocity
+	if (m_touchingGround == false)
+	{
+		float velocityChange = GRAVITY * _frameTime.asSeconds();
+		m_velocity.y += velocityChange;
+	}
+
 	// Call the update function manually on 
 	// the parent class
 	// This will actually move the character
@@ -58,6 +68,11 @@ void Player::Update(sf::Time _frameTime)
 
 void Player::Collide(GameObject& _collider)
 {
+	//Record whether we used to be touching the grounf
+	bool wereTouchingGround = m_touchingGround;
+	//Assume we did not collide
+	m_touchingGround = false;
+
 	// Only do something if the thing
 	// we touched was a wall
 
@@ -70,7 +85,7 @@ void Player::Collide(GameObject& _collider)
 	// outside the wall's bounds, aka back where we were
 	if (wallCollider != nullptr)
 	{
-		// We did hit a wall!!!
+		// We did hit the ground!
 
 		// Return to our previous position that we just
 		// moved away from this frame
@@ -78,6 +93,16 @@ void Player::Collide(GameObject& _collider)
 
 		// clumsy - results in "sticky" walls
 		// But good enough for this game
+
+		////Yes feet are touching
+		m_touchingGround = true;
+
+		//Check if we are falling downward
+		if (wereTouchingGround == false && m_velocity.y > 0)
+		{
+			//We have touched the ground
+			m_velocity.y = 0;
+		}
 	}
 }
 
