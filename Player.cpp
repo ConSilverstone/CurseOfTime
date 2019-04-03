@@ -11,8 +11,8 @@
 
 // Constants
 #define SPEED 500.0f
-#define JUMP_SPEED -1500.0f
-#define GRAVITY 2000.0f
+#define JUMP_SPEED -500.0f
+#define GRAVITY 200.0f
 
 Player::Player()
 	: GridObject()
@@ -60,18 +60,26 @@ void Player::Update(sf::Time _frameTime)
 		m_velocity.y += velocityChange;
 	}
 
-	// Call the update function manually on 
-	// the parent class
-	// This will actually move the character
-	GridObject::Update(_frameTime);
+	//Move sprite base on velocity
+	sf::Vector2f currentPosition = m_sprite.getPosition();
+	sf::Vector2f positionChange = m_velocity * _frameTime.asSeconds();
+	m_sprite.setPosition(currentPosition + positionChange);
+
+	//// Call the update function manually on 
+	//// the parent class
+	//// This will actually move the character
+	//GridObject::Update(_frameTime);
 }
 
 void Player::Collide(GameObject& _collider)
 {
-	//Record whether we used to be touching the grounf
+	//Record whether we used to be touching the ground
 	bool wereTouchingGround = m_touchingGround;
 	//Assume we did not collide
 	m_touchingGround = false;
+
+	//Get the collider for the player
+	sf::FloatRect playerCollider = m_sprite.getGlobalBounds();
 
 	// Only do something if the thing
 	// we touched was a wall
@@ -86,16 +94,17 @@ void Player::Collide(GameObject& _collider)
 	if (wallCollider != nullptr)
 	{
 		// We did hit the ground!
-
-		// Return to our previous position that we just
-		// moved away from this frame
-		m_sprite.setPosition(m_previousPosition);
-
-		// clumsy - results in "sticky" walls
-		// But good enough for this game
+		m_velocity.y = 0;
+		m_velocity.x = 0;
 
 		////Yes feet are touching
 		m_touchingGround = true;
+
+		//Check if we are going upward
+		if (wereTouchingGround == false && m_velocity.y < 0)
+		{
+			m_velocity.y = -JUMP_SPEED;
+		}
 
 		//Check if we are falling downward
 		if (wereTouchingGround == false && m_velocity.y > 0)
