@@ -8,6 +8,7 @@
 # include "Exit.h"
 # include "Boulder.h"
 # include "Wall.h"
+# include "Spike.h"
 
 // Constants
 #define SPEED 500.0f
@@ -34,7 +35,7 @@ void Player::Update(sf::Time _frameTime)
 
 	// Use the keyboard function to check 
 	// which keys are currently held down
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingGround)
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingGround == true)
 	{
 		m_velocity.y = JUMP_SPEED;
 	}
@@ -43,7 +44,7 @@ void Player::Update(sf::Time _frameTime)
 		m_velocity.x = -SPEED;
 		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && m_touchingGround == false)
 	{
 		m_velocity.y = SPEED;
 	}
@@ -61,18 +62,21 @@ void Player::Update(sf::Time _frameTime)
 	}
 
 	//Move sprite base on velocity
-	sf::Vector2f currentPosition = m_sprite.getPosition();
 	sf::Vector2f positionChange = m_velocity * _frameTime.asSeconds();
-	m_sprite.setPosition(currentPosition + positionChange);
+
 
 	//// Call the update function manually on 
 	//// the parent class
 	//// This will actually move the character
-	//GridObject::Update(_frameTime);
+	GridObject::Update(_frameTime);
 }
 
 void Player::Collide(GameObject& _collider)
 {
+	///////////
+	///WALLS///
+	///////////
+
 	//Record whether we used to be touching the ground
 	bool wereTouchingGround = m_touchingGround;
 	//Assume we did not collide
@@ -84,7 +88,7 @@ void Player::Collide(GameObject& _collider)
 	// Only do something if the thing
 	// we touched was a wall
 
-	// Dynamic cast the GameObjec ref
+	// Dynamic cast the GameObject ref
 	// into a Wall pointer
 	// if it succeeds, it was a wall
 	Wall* wallCollider = dynamic_cast<Wall*>(&_collider);
@@ -96,22 +100,55 @@ void Player::Collide(GameObject& _collider)
 		// We did hit the ground!
 		m_velocity.y = 0;
 		m_velocity.x = 0;
-
 		////Yes feet are touching
 		m_touchingGround = true;
 
-		//Check if we are going upward
-		if (wereTouchingGround == false && m_velocity.y < 0)
-		{
-			m_velocity.y = -JUMP_SPEED;
-		}
+		// Create feet collider
+		sf::FloatRect feetCollider = playerCollider;
+		// Set our feet top to be 10 pixels from the bottom of the player collider
+		feetCollider.top += playerCollider.height - 5;
+		// Set our feet collider height to be 10 pixels
+		feetCollider.height = 5;
+		// Set our feet top to be 10 pixels from the bottom of the player collider
+		feetCollider.width = feetCollider.width - 5;
+		// Set our feet collider height to be 10 pixels
+		feetCollider.width = 5;
 
-		//Check if we are falling downward
-		if (wereTouchingGround == false && m_velocity.y > 0)
+		// Create platform top collider
+		sf::FloatRect platformTop = wallCollider->GetBounds();
+		platformTop.height = 10;
+		platformTop.width = 10;
+
+		// Are the feet touching the top of the platform?
+		if (feetCollider.intersects(platformTop))
 		{
-			//We have touched the ground
-			m_velocity.y = 0;
+			//Check if we are going upward
+			if (wereTouchingGround == false && m_velocity.y < 0)
+			{
+				m_velocity.y = -JUMP_SPEED;
+			}
+
+			//Check if we are falling downward
+			if (wereTouchingGround == false && m_velocity.y >= 0)
+			{
+				//We have touched the ground
+				m_velocity.y = 0;
+			}
 		}
+	}
+
+	////////////
+	///Spikes///
+	////////////
+
+	// Dynamic cast the GameObject ref
+	// if it succeeds, it was a spike
+	Spike* spikeCollider = dynamic_cast<Spike*>(&_collider);
+	
+	if (spikeCollider != nullptr)
+	{
+		// We did hit a spike! Kill the player
+		m_level->ReloadLevel();
 	}
 }
 

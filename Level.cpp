@@ -7,6 +7,7 @@
 #include "Boulder.h"
 #include "Diamond.h"
 #include "Exit.h"
+#include "Spike.h"
 
 // Library Includes
 #include <iostream>
@@ -259,7 +260,7 @@ void Level::LoadLevel(int _levelToLoad)
 				// Create an empty vector for our grid contents in this cell
 				m_contents[y].push_back(std::vector<GridObject*>());
 
-				if (ch == ' ')
+				if (ch == '-')
 				{
 					// Do nothing - Empty space
 				}
@@ -306,6 +307,14 @@ void Level::LoadLevel(int _levelToLoad)
 					exit->SetLevel(this);
 					exit->SetGridPosition(x, y);
 					m_contents[y][x].push_back(exit);
+				}
+				else if (ch == 'S')
+				{
+					Spike* spike = new Spike();
+					spike->SetLevel(this);
+					spike->SetGridPosition(x, y);
+					m_contents[y][x].push_back(spike);
+					m_collisionList.push_back(std::make_pair(player, spike));
 				}
 				else
 				{

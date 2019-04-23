@@ -134,6 +134,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="ResetButton.cpp" />
+    <ClCompile Include="Spike.cpp" />
     <ClCompile Include="SpriteObject.cpp" />
     <ClCompile Include="TextObject.cpp" />
     <ClCompile Include="Wall.cpp" />
@@ -149,6 +150,7 @@
     <ClInclude Include="Level.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ResetButton.h" />
+    <ClInclude Include="Spike.h" />
     <ClInclude Include="SpriteObject.h" />
     <ClInclude Include="TextObject.h" />
     <ClInclude Include="Wall.h" />
