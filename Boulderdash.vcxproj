@@ -124,7 +124,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
-    <ClCompile Include="Boulder.cpp" />
+    <ClCompile Include="Box.cpp" />
     <ClCompile Include="Diamond.cpp" />
     <ClCompile Include="Dirt.cpp" />
     <ClCompile Include="Exit.cpp" />
@@ -141,7 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssetManager.h" />
-    <ClInclude Include="Boulder.h" />
+    <ClInclude Include="Box.h" />
     <ClInclude Include="Diamond.h" />
     <ClInclude Include="Dirt.h" />
     <ClInclude Include="Exit.h" />

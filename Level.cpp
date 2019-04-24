@@ -4,7 +4,7 @@
 #include "Wall.h"
 #include "Player.h"
 #include "Dirt.h"
-#include "Boulder.h"
+#include "Box.h"
 #include "Diamond.h"
 #include "Exit.h"
 #include "Spike.h"
@@ -288,10 +288,10 @@ void Level::LoadLevel(int _levelToLoad)
 				}
 				else if (ch == 'B')
 				{
-					Boulder* boulder = new Boulder();
-					boulder->SetLevel(this);
-					boulder->SetGridPosition(x, y);
-					m_contents[y][x].push_back(boulder);
+					Box* box = new Box();
+					box->SetLevel(this);
+					box->SetGridPosition(x, y);
+					m_contents[y][x].push_back(box);
 				}
 				else if (ch == 'D')
 				{

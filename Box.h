@@ -3,10 +3,10 @@
 //Project Includes
 #include "GridObject.h"
 
-class Boulder : public GridObject
+class Box : public GridObject
 {
 public:
-	Boulder();
+	Box();
 
 	void Update(sf::Time _frameTime);
 

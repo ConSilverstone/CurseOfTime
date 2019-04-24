@@ -6,13 +6,13 @@
 # include "Dirt.h"
 # include "Diamond.h"
 # include "Exit.h"
-# include "Boulder.h"
+# include "Box.h"
 # include "Wall.h"
 # include "Spike.h"
 
 // Constants
 #define SPEED 500.0f
-#define JUMP_SPEED -500.0f
+#define JUMP_SPEED -200.0f
 #define GRAVITY 200.0f
 
 Player::Player()
@@ -38,6 +38,7 @@ void Player::Update(sf::Time _frameTime)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingGround == true)
 	{
 		m_velocity.y = JUMP_SPEED;
+		m_touchingGround = false;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 	{
@@ -64,6 +65,10 @@ void Player::Update(sf::Time _frameTime)
 	//Move sprite base on velocity
 	sf::Vector2f positionChange = m_velocity * _frameTime.asSeconds();
 
+	//Set the player player back to not touching ground by default, 
+	//so that the player will drop if they aren't standing on the ground.
+	//Has to be before update for level spawing so they don't just drop through a platform has they spawn in.
+	m_touchingGround = false;
 
 	//// Call the update function manually on 
 	//// the parent class
@@ -97,27 +102,25 @@ void Player::Collide(GameObject& _collider)
 	// outside the wall's bounds, aka back where we were
 	if (wallCollider != nullptr)
 	{
-		// We did hit the ground!
+		//
 		m_velocity.y = 0;
 		m_velocity.x = 0;
 		////Yes feet are touching
 		m_touchingGround = true;
+		//Set the player's position to it's previous position
+		m_sprite.setPosition(m_previousPosition);
 
 		// Create feet collider
 		sf::FloatRect feetCollider = playerCollider;
 		// Set our feet top to be 10 pixels from the bottom of the player collider
 		feetCollider.top += playerCollider.height - 5;
-		// Set our feet collider height to be 10 pixels
+		// Set our feet collider height to be 5 pixels
 		feetCollider.height = 5;
-		// Set our feet top to be 10 pixels from the bottom of the player collider
-		feetCollider.width = feetCollider.width - 5;
-		// Set our feet collider height to be 10 pixels
-		feetCollider.width = 5;
 
 		// Create platform top collider
 		sf::FloatRect platformTop = wallCollider->GetBounds();
 		platformTop.height = 10;
-		platformTop.width = 10;
+		//platformTop.width = 10;
 
 		// Are the feet touching the top of the platform?
 		if (feetCollider.intersects(platformTop))
@@ -196,7 +199,7 @@ void Player::Collide(GameObject& _collider)
 //	//		Exit* exit = dynamic_cast<Exit*>(targetCellContents[i]);
 //	//		// Check if this element in the vector is the exit
 //	//		// by doing a dynamic cast
-//	//		Boulder* boulder = dynamic_cast<Boulder*>(targetCellContents[i]);
+//	//		Box* Box = dynamic_cast<Box*>(targetCellContents[i]);
 //
 //
 //	//		// If dynamic cast succeeds, it will NOT a nullptr
@@ -232,12 +235,12 @@ void Player::Collide(GameObject& _collider)
 //	//				m_level->LoadNextLevel();
 //	//			}
 //	//		}
-//	//		// OR check is it a boulder for and can it be pushed
-//	//		if (boulder != nullptr)
+//	//		// OR check is it a Box for and can it be pushed
+//	//		if (Box != nullptr)
 //	//		{
-//	//			// The Object IS a boulder, but can it be moved?
-//	//			bool isPushed = boulder->attemptPush(_direction);
-//	//			// Only move the player if they were able t push the boulder
+//	//			// The Object IS a Box, but can it be moved?
+//	//			bool isPushed = Box->attemptPush(_direction);
+//	//			// Only move the player if they were able t push the Box
 //	//			if (isPushed == true)
 //	//			{ // and move the player into that position
 //	//				return m_level->MoveObjectTo(this, targetPos);

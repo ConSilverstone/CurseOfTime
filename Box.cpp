@@ -1,11 +1,11 @@
 // Project Includes
-#include "Boulder.h"
+#include "Box.h"
 #include "Framework/AssetManager.h"
 #include "Level.h"
 #include "Player.h"
 #include "Diamond.h"
 
-Boulder::Boulder()
+Box::Box()
 	: GridObject()
 	, m_currentTime(0.0f)
 	, m_timeFallen(0.5f)
@@ -15,7 +15,7 @@ Boulder::Boulder()
 	m_blocksMovement = true;
 }
 
-void Boulder::Update(sf::Time _frameTime)
+void Box::Update(sf::Time _frameTime)
 {
 	if (canItFall(sf::Vector2i(0, 1)) == true)
 	{
@@ -28,7 +28,7 @@ void Boulder::Update(sf::Time _frameTime)
 	
 	if (m_currentTime > m_timeFallen)
 	{
-		// Attempt to move the boulder
+		// Attempt to move the Box
 		attemptFall(sf::Vector2i(0, 1));
 
 		// Reset the timer
@@ -36,7 +36,7 @@ void Boulder::Update(sf::Time _frameTime)
 	}
 }
 
-bool Boulder::canItFall(sf::Vector2i _direction)
+bool Box::canItFall(sf::Vector2i _direction)
 {
 	// Attempt to move in the given direction
 
@@ -69,17 +69,17 @@ bool Boulder::canItFall(sf::Vector2i _direction)
 	else
 	{
 		Player* killPlayer = dynamic_cast<Player*>(blocker);
-		Boulder* boulderSlide = dynamic_cast<Boulder*>(blocker);
-		Diamond* boulderSlideDiamond = dynamic_cast<Diamond*>(blocker);
+		Box* BoxSlide = dynamic_cast<Box*>(blocker);
+		Diamond* BoxSlideDiamond = dynamic_cast<Diamond*>(blocker);
 		if (killPlayer != nullptr)
 		{
 			return true;
 		}
-		else if (boulderSlide != nullptr) 
+		else if (BoxSlide != nullptr) 
 		{
 			return true;
 		}
-		else if (boulderSlideDiamond != nullptr) 
+		else if (BoxSlideDiamond != nullptr) 
 		{
 			return true;
 		}else{
@@ -88,7 +88,7 @@ bool Boulder::canItFall(sf::Vector2i _direction)
 	}
 }
 
-bool Boulder::attemptFall(sf::Vector2i _direction)
+bool Box::attemptFall(sf::Vector2i _direction)
 {
 	// Attempt to move in the given direction
 
@@ -121,17 +121,17 @@ bool Boulder::attemptFall(sf::Vector2i _direction)
 		else
 		{
 			// We were blocked!
-			// Do a dynamic cast to a boulder to see if we can fall
-			Boulder* boulder = dynamic_cast<Boulder*>(blocker);
-			// Do a dymanic cast to see of the boulder hit a player
+			// Do a dynamic cast to a Box to see if we can fall
+			Box* box = dynamic_cast<Box*>(blocker);
+			// Do a dymanic cast to see of the Box hit a player
 			Player* player = dynamic_cast<Player*>(blocker);
 			// Do a dynamic cast to a diamond see if we can fall 
 			Diamond* diamond = dynamic_cast<Diamond*>(blocker);
 
-				// If so (the blocker is a boulder (not nullptr)
-				if (boulder != nullptr & hasSlid == false)
+				// If so (the blocker is a Box (not nullptr)
+				if (box != nullptr & hasSlid == false)
 				{
-					//it is a boulder!
+					//it is a Box!
 					//Can we move left or right?
 
 					sf::Vector2i newTargetPos = m_gridPosition;
@@ -181,8 +181,8 @@ bool Boulder::attemptFall(sf::Vector2i _direction)
 							}
 						}
 					
-					///AS THE BOULDER IS MOVEING SIDEWARDS///
-					// Do a dymanic cast to see of the boulder hit a player
+					///AS THE Box IS MOVEING SIDEWARDS///
+					// Do a dymanic cast to see of the Box hit a player
 					Player* player = dynamic_cast<Player*>(blocker);
 
 					// did we hit a player? (while moving sidewards)
@@ -193,7 +193,7 @@ bool Boulder::attemptFall(sf::Vector2i _direction)
 					}
 				}
 
-				// If so (the blocker is a boulder (not nullptr)
+				// If so (the blocker is a Box (not nullptr)
 				if (diamond != nullptr & hasSlid == false)
 				{
 					//it is a diamond!
@@ -246,8 +246,8 @@ bool Boulder::attemptFall(sf::Vector2i _direction)
 							}
 						}
 					
-					///AS THE BOULDER IS MOVEING SIDEWARDS///
-					// Do a dymanic cast to see of the boulder hit a player
+					///AS THE Box IS MOVEING SIDEWARDS///
+					// Do a dymanic cast to see of the Box hit a player
 					Player* player = dynamic_cast<Player*>(blocker);
 
 					// did we hit a player? (while moving sidewards)
@@ -258,7 +258,7 @@ bool Boulder::attemptFall(sf::Vector2i _direction)
 					}
 				}
 			
-			///AS THE BOULDER IS MOVEING DOWN///
+			///AS THE Box IS MOVEING DOWN///
 			// did we it a player?
 			if (player != nullptr)
 			{
@@ -272,7 +272,7 @@ bool Boulder::attemptFall(sf::Vector2i _direction)
 	return false;
 }
 
-bool Boulder::attemptPush(sf::Vector2i _direction)
+bool Box::attemptPush(sf::Vector2i _direction)
 {
 	// Attempt to move in the given direction
 
