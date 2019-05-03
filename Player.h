@@ -35,12 +35,16 @@ public:
 	virtual void Update(sf::Time _frameTime);
 	virtual void Collide(GameObject& _collider);
 
+	//Data
+
 private:
 	//Data
 	sf::Sound m_playerMoveSound;
 	sf::Sound m_playerBumpingSound;
 	sf::Vector2i m_pendingMove;
+	float m_timerCountdown;
 
 	//State
 	bool m_touchingGround;
+	bool m_gameStart;
 };

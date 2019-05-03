@@ -12,7 +12,7 @@
 
 // Constants
 #define SPEED 500.0f
-#define JUMP_SPEED -200.0f
+#define JUMP_SPEED -300.0f
 #define GRAVITY 200.0f
 
 Player::Player()
@@ -21,6 +21,8 @@ Player::Player()
 	, m_playerMoveSound()
 	, m_playerBumpingSound()
 	, m_touchingGround(false)
+	, m_timerCountdown(60.00)
+	, m_gameStart(false)
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
 	m_playerMoveSound.setBuffer(AssetManager::GetSoundBuffer("audio/footstep1.ogg"));
@@ -39,26 +41,30 @@ void Player::Update(sf::Time _frameTime)
 	{
 		m_velocity.y = JUMP_SPEED;
 		m_touchingGround = false;
+		m_gameStart = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 	{
 		m_velocity.x = -SPEED;
 		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
+		m_gameStart = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && m_touchingGround == false)
 	{
 		m_velocity.y = SPEED;
+		m_gameStart = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 	{
 		m_velocity.x = SPEED;
 		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandRight.png"));
+		m_gameStart = true;
 	}
 
 	//Apply gravity to our velocity
 	if (m_touchingGround == false)
 	{
-		float velocityChange = GRAVITY * _frameTime.asSeconds();
+		float velocityChange = (GRAVITY * _frameTime.asSeconds()) * 2;
 		m_velocity.y += velocityChange;
 	}
 
@@ -70,6 +76,18 @@ void Player::Update(sf::Time _frameTime)
 	//Has to be before update for level spawing so they don't just drop through a platform has they spawn in.
 	m_touchingGround = false;
 
+	//If the game has started, down down from 60 seconds
+	if (m_gameStart = true)
+	{
+		m_timerCountdown -= _frameTime.asSeconds();
+	}
+	//If the count down reaches 0, everything is reset for the current level.
+	if (m_timerCountdown <= 0)
+	{
+		m_gameStart = false;
+		m_timerCountdown = 60.0f;
+		m_level->ReloadLevel();
+	}
 	//// Call the update function manually on 
 	//// the parent class
 	//// This will actually move the character
