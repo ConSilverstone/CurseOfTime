@@ -46,5 +46,6 @@ private:
 
 	//State
 	bool m_touchingGround;
+	bool m_touchingWall;
 	bool m_gameStart;
 };

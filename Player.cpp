@@ -12,7 +12,7 @@
 
 // Constants
 #define SPEED 500.0f
-#define JUMP_SPEED -300.0f
+#define JUMP_SPEED -600.0f
 #define GRAVITY 200.0f
 
 Player::Player()
@@ -21,6 +21,7 @@ Player::Player()
 	, m_playerMoveSound()
 	, m_playerBumpingSound()
 	, m_touchingGround(false)
+	, m_touchingWall(false)
 	, m_timerCountdown(60.00)
 	, m_gameStart(false)
 {
@@ -75,6 +76,7 @@ void Player::Update(sf::Time _frameTime)
 	//so that the player will drop if they aren't standing on the ground.
 	//Has to be before update for level spawing so they don't just drop through a platform has they spawn in.
 	m_touchingGround = false;
+	m_touchingWall = false;
 
 	//If the game has started, down down from 60 seconds
 	if (m_gameStart = true)
@@ -104,6 +106,10 @@ void Player::Collide(GameObject& _collider)
 	bool wereTouchingGround = m_touchingGround;
 	//Assume we did not collide
 	m_touchingGround = false;
+	//Record whether we used to be touching the ground
+	bool wereTouchingWall = m_touchingWall;
+	//Assume we did not collide
+	m_touchingWall = false;
 
 	//Get the collider for the player
 	sf::FloatRect playerCollider = m_sprite.getGlobalBounds();
@@ -120,13 +126,7 @@ void Player::Collide(GameObject& _collider)
 	// outside the wall's bounds, aka back where we were
 	if (wallCollider != nullptr)
 	{
-		//
-		m_velocity.y = 0;
-		m_velocity.x = 0;
 		////Yes feet are touching
-		m_touchingGround = true;
-		//Set the player's position to it's previous position
-		m_sprite.setPosition(m_previousPosition);
 
 		// Create feet collider
 		sf::FloatRect feetCollider = playerCollider;
@@ -135,25 +135,97 @@ void Player::Collide(GameObject& _collider)
 		// Set our feet collider height to be 5 pixels
 		feetCollider.height = 5;
 
+		// Create head collider
+		sf::FloatRect headCollider = playerCollider;
+		// Set our head collider height to be 5 pixels
+		headCollider.height = 5;
+		// Shorten the width to not mess with the other colliders
+		headCollider.width -= 10;
+		headCollider.left += 5;
+
+		//Create a collider for the right hand side of the player
+		sf::FloatRect rightCollider = playerCollider;
+		//Set it to the right of the player -5
+		rightCollider.left += playerCollider.width - 5;
+		// Set our right side collider width to be 5 pixels
+		rightCollider.width = 5;
+
+		//Create a collider for the right hand side of the player
+		sf::FloatRect leftCollider = playerCollider;
+		// Set our left side collider width to be 5 pixels
+		leftCollider.width = 5;
+
 		// Create platform top collider
 		sf::FloatRect platformTop = wallCollider->GetBounds();
 		platformTop.height = 10;
-		//platformTop.width = 10;
+
+		// Create platform bottom collider
+		sf::FloatRect platformBottom = wallCollider->GetBounds();
+		//Set it to the bottom of the platform - 5
+		platformBottom.height += wallCollider->GetBounds().height - 5;
+		platformTop.height = 10;
+
+		//Create a collider for the right hand side of the platform
+		sf::FloatRect platformRight = wallCollider->GetBounds();
+		//Set it to the right of the player -5
+		platformRight.left += platformRight.width - 5;
+		// Set our right side collider width to be 5 pixels
+		platformRight.width = 5;
+
+		//Create a collider for the left hand side of the platform
+		sf::FloatRect platformLeft = wallCollider->GetBounds();
+		// Set our left side collider width to be 5 pixels
+		platformLeft.width = 5;
 
 		// Are the feet touching the top of the platform?
 		if (feetCollider.intersects(platformTop))
 		{
-			//Check if we are going upward
-			if (wereTouchingGround == false && m_velocity.y < 0)
-			{
-				m_velocity.y = -JUMP_SPEED;
-			}
+			// We are now touching the ground!
+			m_touchingGround = true;
 
 			//Check if we are falling downward
-			if (wereTouchingGround == false && m_velocity.y >= 0)
+			if (wereTouchingGround == false && m_velocity.y > 0)
 			{
 				//We have touched the ground
 				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y - m_sprite.getGlobalBounds().height);
+			}
+		}
+
+		// Is the head touching the bottom of the platform?
+		if (headCollider.intersects(platformBottom))
+		{
+			// We are now touching the ground!
+			m_touchingGround = true;
+
+			//Check if we are jumping
+			if (wereTouchingGround == false && m_velocity.y < 0)
+			{
+				//We have touched the roof
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height);
+			}
+		}
+
+		if (rightCollider.intersects(platformLeft))
+		{
+			m_touchingWall = true;
+
+			if (wereTouchingWall == false && m_velocity.x > 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+			}
+		}
+
+		if (leftCollider.intersects(platformRight))
+		{
+			m_touchingWall = true;
+
+			if (wereTouchingWall == false && m_velocity.x < 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
 			}
 		}
 	}
