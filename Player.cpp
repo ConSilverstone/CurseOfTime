@@ -12,7 +12,7 @@
 
 // Constants
 #define SPEED 500.0f
-#define JUMP_SPEED -600.0f
+#define JUMP_SPEED -300.0f
 #define GRAVITY 200.0f
 
 Player::Player()
