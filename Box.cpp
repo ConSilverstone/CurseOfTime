@@ -4,12 +4,15 @@
 #include "Level.h"
 #include "Player.h"
 #include "Diamond.h"
+#include "Wall.h"
+
+// Constants
+#define GRAVITY 200.0f
 
 Box::Box()
 	: GridObject()
-	, m_currentTime(0.0f)
-	, m_timeFallen(0.5f)
-	, hasSlid(false)
+	, m_touchingGround(false)
+	, m_touchingWall(false)
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/box.png"));
 	m_blocksMovement = true;
@@ -17,293 +20,61 @@ Box::Box()
 
 void Box::Update(sf::Time _frameTime)
 {
-	if (canItFall(sf::Vector2i(0, 1)) == true)
-	{
-		m_currentTime += _frameTime.asSeconds();
-	}
-	else 
-	{
-		m_currentTime = 0;
-	}
-	
-	if (m_currentTime > m_timeFallen)
-	{
-		// Attempt to move the Box
-		attemptFall(sf::Vector2i(0, 1));
 
-		// Reset the timer
-		m_currentTime = 0;
+	//Apply gravity to our velocity
+	if (m_touchingGround == false)
+	{
+		float velocityChange = (GRAVITY * _frameTime.asSeconds()) * 2;
+		m_velocity.y += velocityChange;
 	}
+
+	//Move sprite base on velocity
+	sf::Vector2f positionChange = m_velocity * _frameTime.asSeconds();
+
+	//Set the box back to not touching ground by default
+	m_touchingGround = false;
+	m_touchingWall = false;
+
+	//// Call the update function manually on 
+	//// the parent class
+	//// This will actually move the character
+	GridObject::Update(_frameTime);
 }
 
-bool Box::canItFall(sf::Vector2i _direction)
+void Box::Collide(GameObject& _collider)
 {
-	// Attempt to move in the given direction
+	//Record whether we used to be touching the ground
+	bool wereTouchingGround = m_touchingGround;
+	//Assume we did not collide
+	m_touchingGround = false;
+	//Record whether we used to be touching the ground
+	bool wereTouchingWall = m_touchingWall;
+	//Assume we did not collide
+	m_touchingWall = false;
 
-	// Get current position
-	// Calculate target position
-	sf::Vector2i targetPos = m_gridPosition + _direction;
+	// Dynamic cast the GameObject ref
+	// into a Wall pointer
+	// if it succeeds, it was a wall
+	Wall* wallCollider = dynamic_cast<Wall*>(&_collider);
 
-	// Check if the space is empty
-
-	// Get list of objects in our target position
-	std::vector<GridObject*> targetCellContents = m_level->GetObjectAt(targetPos);
-
-	// Check if any of those objects block movement
-	bool blocked = false;
-	GridObject* blocker = nullptr;
-	for (int i = 0; i < targetCellContents.size(); ++i)
+	// If it was a wall we hit, we need to more ourselves
+	// outside the wall's bounds, aka back where we were
+	if (wallCollider != nullptr)
 	{
-		if (targetCellContents[i]->GetBlocksMovement() == true)
-		{
-			blocked = true;
-			blocker = targetCellContents[i];
-		}
-	}
+		// We are now touching the ground!
+		m_touchingGround = true;
 
-	// If empty, move there
-	if (!blocked)
-	{
-		return true;
-	}
-	else
-	{
-		Player* killPlayer = dynamic_cast<Player*>(blocker);
-		Box* BoxSlide = dynamic_cast<Box*>(blocker);
-		Diamond* BoxSlideDiamond = dynamic_cast<Diamond*>(blocker);
-		if (killPlayer != nullptr)
+		//Check if we are falling downward
+		if (wereTouchingGround == false && m_velocity.y > 0)
 		{
-			return true;
-		}
-		else if (BoxSlide != nullptr) 
-		{
-			return true;
-		}
-		else if (BoxSlideDiamond != nullptr) 
-		{
-			return true;
-		}else{
-			return false;
+			//We have touched the ground
+			m_velocity.y = 0;
+			m_sprite.setPosition(m_previousPosition);
 		}
 	}
 }
 
-bool Box::attemptFall(sf::Vector2i _direction)
+void Box::BoxSlide(sf::Vector2f _velocity)
 {
-	// Attempt to move in the given direction
-
-	// Get current position
-	// Calculate target position
-	sf::Vector2i targetPos = m_gridPosition + _direction;
-
-	// Check if the space is empty
-
-	// Get list of objects in our target position
-	std::vector<GridObject*> targetCellContents = m_level->GetObjectAt(targetPos);
-
-	// Check if any of those objects block movement
-	bool blocked = false;
-	GridObject* blocker = nullptr;
-	for (int i = 0; i < targetCellContents.size(); ++i)
-	{
-		if (targetCellContents[i]->GetBlocksMovement() == true)
-		{
-			blocked = true;
-			blocker = targetCellContents[i];
-		}
-	}
-		// If empty, move there
-		if (!blocked)
-		{
-			hasSlid = false;
-			return m_level->MoveObjectTo(this, targetPos);
-		}
-		else
-		{
-			// We were blocked!
-			// Do a dynamic cast to a Box to see if we can fall
-			Box* box = dynamic_cast<Box*>(blocker);
-			// Do a dymanic cast to see of the Box hit a player
-			Player* player = dynamic_cast<Player*>(blocker);
-			// Do a dynamic cast to a diamond see if we can fall 
-			Diamond* diamond = dynamic_cast<Diamond*>(blocker);
-
-				// If so (the blocker is a Box (not nullptr)
-				if (box != nullptr & hasSlid == false)
-				{
-					//it is a Box!
-					//Can we move left or right?
-
-					sf::Vector2i newTargetPos = m_gridPosition;
-					
-						newTargetPos.x = m_gridPosition.x + 1;
-						targetCellContents = m_level->GetObjectAt(newTargetPos);
-					
-
-					// Check if any of those objects block movement
-					blocked = false;
-					for (int i = 0; i < targetCellContents.size(); ++i)
-					{
-						if (targetCellContents[i]->GetBlocksMovement() == true)
-						{
-							blocked = true;
-							blocker = targetCellContents[i];
-						}
-					}
-
-						if (blocked == false)
-						{
-							hasSlid = true;
-							return m_level->MoveObjectTo(this, newTargetPos);
-						}
-						else
-						{
-
-								newTargetPos.x = m_gridPosition.x - 1;
-								targetCellContents = m_level->GetObjectAt(newTargetPos);
-								
-							
-							// Check if any of those objects block movement
-							blocked = false;
-							for (int i = 0; i < targetCellContents.size(); ++i)
-							{
-								if (targetCellContents[i]->GetBlocksMovement() == true)
-								{
-									blocked = true;
-									blocker = targetCellContents[i];
-								}
-							}
-
-							if (blocked == false)
-							{
-								hasSlid = true;
-								return m_level->MoveObjectTo(this, newTargetPos);
-							}
-						}
-					
-					///AS THE Box IS MOVEING SIDEWARDS///
-					// Do a dymanic cast to see of the Box hit a player
-					Player* player = dynamic_cast<Player*>(blocker);
-
-					// did we hit a player? (while moving sidewards)
-					if (player != nullptr)
-					{
-						// We hit a player! Kill them!
-						m_level->ReloadLevel();
-					}
-				}
-
-				// If so (the blocker is a Box (not nullptr)
-				if (diamond != nullptr & hasSlid == false)
-				{
-					//it is a diamond!
-					//Can we move left or right?
-
-					sf::Vector2i newTargetPos = m_gridPosition;
-					
-						newTargetPos.x = m_gridPosition.x + 1;
-						targetCellContents = m_level->GetObjectAt(newTargetPos);
-					
-
-					// Check if any of those objects block movement
-					blocked = false;
-					for (int i = 0; i < targetCellContents.size(); ++i)
-					{
-						if (targetCellContents[i]->GetBlocksMovement() == true)
-						{
-							blocked = true;
-							blocker = targetCellContents[i];
-						}
-					}
-
-						if (blocked == false)
-						{
-							hasSlid = true;
-							return m_level->MoveObjectTo(this, newTargetPos);
-						}
-						else
-						{
-
-								newTargetPos.x = m_gridPosition.x - 1;
-								targetCellContents = m_level->GetObjectAt(newTargetPos);
-								
-							
-							// Check if any of those objects block movement
-							blocked = false;
-							for (int i = 0; i < targetCellContents.size(); ++i)
-							{
-								if (targetCellContents[i]->GetBlocksMovement() == true)
-								{
-									blocked = true;
-									blocker = targetCellContents[i];
-								}
-							}
-
-							if (blocked == false)
-							{
-								hasSlid = true;
-								return m_level->MoveObjectTo(this, newTargetPos);
-							}
-						}
-					
-					///AS THE Box IS MOVEING SIDEWARDS///
-					// Do a dymanic cast to see of the Box hit a player
-					Player* player = dynamic_cast<Player*>(blocker);
-
-					// did we hit a player? (while moving sidewards)
-					if (player != nullptr)
-					{
-						// We hit a player! Kill them!
-						m_level->ReloadLevel();
-					}
-				}
-			
-			///AS THE Box IS MOVEING DOWN///
-			// did we it a player?
-			if (player != nullptr)
-			{
-				// We hit a player! Kill them!
-				m_level->ReloadLevel();
-			}
-		}
-	
-	// If movement is blocked, do nothing, return false
-	// Default
-	return false;
-}
-
-bool Box::attemptPush(sf::Vector2i _direction)
-{
-	// Attempt to move in the given direction
-
-// Get current position
-// Calculate target position
-	sf::Vector2i targetPos = m_gridPosition + _direction;
-
-	// Check if the space is empty
-
-	// Get list of objects in our target position
-	std::vector<GridObject*> targetCellContents = m_level->GetObjectAt(targetPos);
-
-	// Check if any of those objects block movement
-	bool blocked = false;
-	GridObject* blocker = nullptr;
-	for (int i = 0; i < targetCellContents.size(); ++i)
-	{
-		if (targetCellContents[i]->GetBlocksMovement() == true)
-		{
-			blocked = true;
-			blocker = targetCellContents[i];
-		}
-	}
-
-	// If empty, move there
-	if (!blocked)
-	{
-		return m_level->MoveObjectTo(this, targetPos);
-	}
-
-	// If movement is blocked, do nothing, return false
-	// Default
-	return false;
+	m_velocity = _velocity;
 }

@@ -8,16 +8,16 @@ class Box : public GridObject
 public:
 	Box();
 
+	//Overriding Methods
 	void Update(sf::Time _frameTime);
+	void Collide(GameObject& _collider);
 
-	bool canItFall(sf::Vector2i _direction);
-	bool attemptFall(sf::Vector2i _direction);
-	bool attemptPush(sf::Vector2i _direction);
+	void BoxSlide(sf::Vector2f _velocity);
 
 private:
 
-	float m_currentTime;
-	float m_timeFallen;
-	bool hasSlid;
+	//State
+	bool m_touchingGround;
+	bool m_touchingWall;
 
 };

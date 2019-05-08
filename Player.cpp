@@ -72,7 +72,7 @@ void Player::Update(sf::Time _frameTime)
 	//Move sprite base on velocity
 	sf::Vector2f positionChange = m_velocity * _frameTime.asSeconds();
 
-	//Set the player player back to not touching ground by default, 
+	//Set the player back to not touching ground by default, 
 	//so that the player will drop if they aren't standing on the ground.
 	//Has to be before update for level spawing so they don't just drop through a platform has they spawn in.
 	m_touchingGround = false;
@@ -90,6 +90,8 @@ void Player::Update(sf::Time _frameTime)
 		m_timerCountdown = 60.0f;
 		m_level->ReloadLevel();
 	}
+
+	
 	//// Call the update function manually on 
 	//// the parent class
 	//// This will actually move the character
@@ -114,6 +116,33 @@ void Player::Collide(GameObject& _collider)
 	//Get the collider for the player
 	sf::FloatRect playerCollider = m_sprite.getGlobalBounds();
 
+	// Create feet collider
+	sf::FloatRect feetCollider = playerCollider;
+	// Set our feet top to be 10 pixels from the bottom of the player collider
+	feetCollider.top += playerCollider.height - 5;
+	// Set our feet collider height to be 5 pixels
+	feetCollider.height = 5;
+
+	// Create head collider
+	sf::FloatRect headCollider = playerCollider;
+	// Set our head collider height to be 5 pixels
+	headCollider.height = 5;
+	// Shorten the width to not mess with the other colliders
+	headCollider.width -= 10;
+	headCollider.left += 5;
+
+	//Create a collider for the right hand side of the player
+	sf::FloatRect rightCollider = playerCollider;
+	//Set it to the right of the player -5
+	rightCollider.left += playerCollider.width - 5;
+	// Set our right side collider width to be 5 pixels
+	rightCollider.width = 5;
+
+	//Create a collider for the right hand side of the player
+	sf::FloatRect leftCollider = playerCollider;
+	// Set our left side collider width to be 5 pixels
+	leftCollider.width = 5;
+
 	// Only do something if the thing
 	// we touched was a wall
 
@@ -127,34 +156,6 @@ void Player::Collide(GameObject& _collider)
 	if (wallCollider != nullptr)
 	{
 		////Yes feet are touching
-
-		// Create feet collider
-		sf::FloatRect feetCollider = playerCollider;
-		// Set our feet top to be 10 pixels from the bottom of the player collider
-		feetCollider.top += playerCollider.height - 5;
-		// Set our feet collider height to be 5 pixels
-		feetCollider.height = 5;
-
-		// Create head collider
-		sf::FloatRect headCollider = playerCollider;
-		// Set our head collider height to be 5 pixels
-		headCollider.height = 5;
-		// Shorten the width to not mess with the other colliders
-		headCollider.width -= 10;
-		headCollider.left += 5;
-
-		//Create a collider for the right hand side of the player
-		sf::FloatRect rightCollider = playerCollider;
-		//Set it to the right of the player -5
-		rightCollider.left += playerCollider.width - 5;
-		// Set our right side collider width to be 5 pixels
-		rightCollider.width = 5;
-
-		//Create a collider for the right hand side of the player
-		sf::FloatRect leftCollider = playerCollider;
-		// Set our left side collider width to be 5 pixels
-		leftCollider.width = 5;
-
 		// Create platform top collider
 		sf::FloatRect platformTop = wallCollider->GetBounds();
 		platformTop.height = 10;
@@ -243,101 +244,13 @@ void Player::Collide(GameObject& _collider)
 		// We did hit a spike! Kill the player
 		m_level->ReloadLevel();
 	}
-}
 
-//bool Player::AttemptMove(sf::Vector2i _direction)
-//{
-//	////Attempt to move in the given direction
-//
-//	//// Get current position
-//	//// Calculate target position
-//	//sf::Vector2i targetPos = m_gridPosition + _direction;
-//
-//	//// Check if the spaces are empty
-//	//// Get list of objects in our target position
-//	//std::vector<GridObject*> targetCellContents = m_level->GetObjectAt(targetPos);
-//
-//	//// Check if any of those objects block movement
-//	//bool blocked = false;
-//	//for (int i = 0; i < targetCellContents.size(); i++)
-//	//{
-//	//	if (targetCellContents[i]->GetBlocksMovement() == true)
-//	//	{
-//	//		blocked = true;
-//	//	}
-//	//}
-//
-//	//// If empty, move there
-//	//if (blocked == false)
-//	//{
-//	//	return m_level->MoveObjectTo(this, targetPos);
-//	//}
-//	//else 
-//	//{
-//	//	// Check what the thing is, should we care?
-//	//	// Loop through the contents to see if it is a thing we care about
-//	//	for (int i = 0; i < targetCellContents.size(); ++i)
-//	//	{
-//	//		// Check if this element in the vector is dirt
-//	//		// by doing a dynamic cast
-//	//		Dirt* dirt = dynamic_cast<Dirt*>(targetCellContents[i]);
-//	//		// Check if this element in the vector is THE DIAMOND
-//	//		// by doing a dynamic cast
-//	//		Diamond* diamond = dynamic_cast<Diamond*>(targetCellContents[i]);
-//	//		// Check if this element in the vector is the exit
-//	//		// by doing a dynamic cast
-//	//		Exit* exit = dynamic_cast<Exit*>(targetCellContents[i]);
-//	//		// Check if this element in the vector is the exit
-//	//		// by doing a dynamic cast
-//	//		Box* Box = dynamic_cast<Box*>(targetCellContents[i]);
-//
-//
-//	//		// If dynamic cast succeeds, it will NOT a nullptr
-//	//		// aka, the object IS dirt
-//	//		if (dirt != nullptr)
-//	//		{
-//	//			// The object IS dirt!
-//	//			// DELETE IT
-//	//			m_level->deleteObjectAt(dirt, targetPos);
-//	//			// and move the player into that position
-//	//			return m_level->MoveObjectTo(this, targetPos);
-//	//		}
-//	//		// OR check is it is a Diamond
-//	//		if (diamond != nullptr)
-//	//		{
-//	//			// The object IS a diamond!
-//	//			// give them that score tho.
-//	//			m_level->SetCurrentScore();
-//	//			// Check if the level is complete yet
-//	//			m_level->LevelComplete();
-//	//			// DELETE IT
-//	//			m_level->deleteObjectAt(diamond, targetPos);
-//	//			// and move the player into that position
-//	//			return m_level->MoveObjectTo(this, targetPos);
-//	//		}
-//	//		// OR check is it is the exit and that the level is complete
-//	//		if (exit != nullptr)
-//	//		{
-//	//			// The Object IS the exit, but is the level complete?
-//	//			if (m_level->LevelComplete() == true)
-//	//			{
-//	//				//All diamonds are collected, move to the next level.
-//	//				m_level->LoadNextLevel();
-//	//			}
-//	//		}
-//	//		// OR check is it a Box for and can it be pushed
-//	//		if (Box != nullptr)
-//	//		{
-//	//			// The Object IS a Box, but can it be moved?
-//	//			bool isPushed = Box->attemptPush(_direction);
-//	//			// Only move the player if they were able t push the Box
-//	//			if (isPushed == true)
-//	//			{ // and move the player into that position
-//	//				return m_level->MoveObjectTo(this, targetPos);
-//	//			}
-//	//		}
-//	//	}
-//	//}
-//	// If movement is blocked, do nothing, return false
-//	return false;
-//}
+	// Dynamic cast the GameObject ref
+	// if it succeeds, it was a box
+	Box* boxCollider = dynamic_cast<Box*>(&_collider);
+
+	if (boxCollider != nullptr)
+	{
+		// We did hit a box, now we need to move it based on the velocity of the player!
+	}
+}
