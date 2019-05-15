@@ -32,16 +32,17 @@ private:
 
 	const float m_cellSize;
 	int m_currentLevel;
-	std::vector< std::vector <sf::Sprite> > m_background;
-	std::vector< std::vector <std::vector<GridObject*> > > m_contents;
 	int m_levelDiamonds;
 	int m_currentScore;
 	int m_pendingLoad;
 	bool m_pendingReload;
 	GameObject* m_player;
+	GameObject* m_timer;
 
 	// GameObject Lists
 	std::vector<std::pair<GameObject*, GameObject*> > m_collisionList;
+	std::vector< std::vector <std::vector<GridObject*> > > m_contents;
+	std::vector< std::vector <sf::Sprite> > m_background;
 
 	//State
 	sf::Vector2f m_velocity;

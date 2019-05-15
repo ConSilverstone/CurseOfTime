@@ -259,3 +259,8 @@ int Player::GetTimer()
 {
 	return m_timerCountdown;
 }
+
+void Player::ChangeScore(int _changeBy)
+{
+	m_timerCountdown += _changeBy;
+}

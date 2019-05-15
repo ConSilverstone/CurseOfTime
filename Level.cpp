@@ -8,6 +8,7 @@
 #include "Diamond.h"
 #include "Exit.h"
 #include "Spike.h"
+#include "Timer.h"
 
 // Library Includes
 #include <iostream>
@@ -26,6 +27,7 @@ Level::Level()
 	, m_hasGravity(false)
 	, m_touchingGround(false)
 	, m_player(nullptr)
+	, m_timer(nullptr)
 	, m_collisionList()
 {
 	LoadLevel(1);
@@ -67,6 +69,7 @@ void Level::Draw(sf::RenderTarget & _target)
 
 	// Reset View
 	_target.setView(_target.getDefaultView());
+	m_timer->Draw(_target);
 }
 
 void Level::Update(sf::Time _frameTime)
@@ -322,6 +325,10 @@ void Level::LoadLevel(int _levelToLoad)
 				}
 			}
 		}
+
+		//Timer
+		Timer* ourTimer = new Timer();
+		m_timer = ourTimer;
 
 		m_currentScore = 0;
 		// Close the file now that we are done with it
