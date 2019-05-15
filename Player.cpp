@@ -254,3 +254,8 @@ void Player::Collide(GameObject& _collider)
 		// We did hit a box, now we need to move it based on the velocity of the player!
 	}
 }
+
+int Player::GetTimer()
+{
+	return m_timerCountdown;
+}

@@ -137,6 +137,7 @@
     <ClCompile Include="Spike.cpp" />
     <ClCompile Include="SpriteObject.cpp" />
     <ClCompile Include="TextObject.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -153,6 +154,7 @@
     <ClInclude Include="Spike.h" />
     <ClInclude Include="SpriteObject.h" />
     <ClInclude Include="TextObject.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="Wall.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

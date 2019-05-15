@@ -35,7 +35,8 @@ public:
 	virtual void Update(sf::Time _frameTime);
 	virtual void Collide(GameObject& _collider);
 
-	//Data
+	// Public Player Methods
+	int GetTimer();
 
 private:
 	//Data
