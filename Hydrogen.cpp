@@ -1,8 +1,13 @@
-#include "Spike.h"
+//Project includes
+#include "Hydrogen.h"
 #include "Framework/AssetManager.h"
 
-Spike::Spike()
+Hydrogen::Hydrogen()
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/HighSpike.png"));
-	m_blocksMovement = true;
+}
+
+void Hydrogen::Update(sf::Time _frameTime)
+{
+
 }

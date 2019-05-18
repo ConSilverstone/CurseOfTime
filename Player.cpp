@@ -206,7 +206,7 @@ void Player::Collide(GameObject& _collider)
 		if (headCollider.intersects(platformBottom))
 		{
 			// We are now touching the ground!
-			m_touchingGround = true;
+			//m_touchingGround = true;
 
 			//Check if we are jumping
 			if (wereTouchingGround == false && m_velocity.y < 0)
@@ -295,7 +295,7 @@ int Player::GetTimer()
 	return m_timerCountdown;
 }
 
-void Player::ChangeScore(int _changeBy)
+void Player::ChangeTimer(int _changeBy)
 {
 	m_timerCountdown += _changeBy;
 }

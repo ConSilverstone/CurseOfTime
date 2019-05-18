@@ -1,6 +1,8 @@
 // Project Includes
 #include "Level.h"
 #include "Framework/AssetManager.h"
+
+//Project Includes (Objects)
 #include "Wall.h"
 #include "Player.h"
 #include "Dirt.h"
@@ -11,6 +13,12 @@
 #include "Killzone.h"
 #include "Timer.h"
 
+// Project Includes (Elemental Effects)
+#include "Collagen.h"
+#include "Hydrogen.h"
+#include "Sulphur.h"
+#include "Electricity.h"
+
 // Library Includes
 #include <iostream>
 #include <fstream>
@@ -20,7 +28,7 @@ Level::Level()
 	, m_currentLevel(0)
 	, m_background()
 	, m_contents()
-	, m_currentScore(0)
+	, m_drawListUI()
 	, m_levelDiamonds(0)
 	, m_pendingLoad()
 	, m_pendingReload(false)
@@ -28,6 +36,7 @@ Level::Level()
 	, m_hasGravity(false)
 	, m_touchingGround(false)
 	, m_player(nullptr)
+	, m_wall(nullptr)
 	, m_timer(nullptr)
 	, m_collisionList()
 {
@@ -70,7 +79,13 @@ void Level::Draw(sf::RenderTarget & _target)
 
 	// Reset View
 	_target.setView(_target.getDefaultView());
-	m_timer->Draw(_target);
+	
+	// Draw UI objects
+	for (int i = 0; i < m_drawListUI.size(); ++i)
+	{
+		if (m_drawListUI[i]->IsActive())
+			m_drawListUI[i]->Draw(_target);
+	}
 }
 
 void Level::Update(sf::Time _frameTime)
@@ -87,6 +102,13 @@ void Level::Update(sf::Time _frameTime)
 				m_contents[y][x][z]->Update(_frameTime);
 			}
 		}
+	}
+
+	// Update all game objects
+	for (int i = 0; i < m_updateList.size(); ++i)
+	{
+		if (m_updateList[i]->IsActive())
+			m_updateList[i]->Update(_frameTime);
 	}
 
 	// If the player needs to reload
@@ -198,6 +220,7 @@ void Level::LoadLevel(int _levelToLoad)
 	// Clear out our lists
 	m_background.clear();
 	m_contents.clear();
+	m_drawListUI.clear();
 	m_collisionList.clear();
 
 	// Create a buffer for loading the next level
@@ -233,6 +256,7 @@ void Level::LoadLevel(int _levelToLoad)
 
 		// Create the wall first as other objects will need to reference it (Collisions)
 		Wall* wall = new Wall();
+		m_wall = wall;
 
 		// Read each character one by one from the file...
 		char ch;
@@ -341,48 +365,33 @@ void Level::LoadLevel(int _levelToLoad)
 			}
 		}
 
-		//Timer
+		// UI Objects that are now drawn via level character scripts
 		Timer* ourTimer = new Timer();
-		m_timer = ourTimer;
+		ourTimer->SetPlayer(player);
+		m_drawListUI.push_back(ourTimer);
 
-		m_currentScore = 0;
+		Collagen* collagen = new Collagen();
+		collagen->SetPlayer(player);
+		m_drawListUI.push_back(collagen);
+
+
 		// Close the file now that we are done with it
 		inFile.close();
 }
 
 void Level::ReloadLevel()
 {
-	m_levelDiamonds = 0;
 	LoadLevel(m_currentLevel);
 }
 
 void Level::LoadNextLevel()
 {
-	m_levelDiamonds = 0;
 		m_pendingLoad = m_currentLevel + 1;
-}
-
-void Level::SetCurrentScore()
-{
-	m_currentScore++;
 }
 
 float Level::GetCellSize()
 {
 	return m_cellSize;
-}
-
-bool Level::LevelComplete()
-{
-	// Spawn the exit gate if the current score is equal to the number of diamonds that
-	// were in the level
-	if (m_currentScore == m_levelDiamonds)
-	{
-		// reset the max diamonds in level (for next level to say how many it has)
-		return true;
-		
-	}
-		return false;
 }
 
 bool Level::MoveObjectTo(GridObject * _toMove, sf::Vector2i _targetPos)

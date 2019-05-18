@@ -10,9 +10,6 @@ Exit::Exit()
 
 void Exit::Update(sf::Time _frameTime) 
 {
-	if (m_level->LevelComplete() == true) 
-	{
-	 m_sprite.setTexture(AssetManager::GetTexture("graphics/DoorOpen.png"));
-	}
+
 }
 

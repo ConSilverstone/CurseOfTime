@@ -37,7 +37,7 @@ public:
 
 	// Public Player Methods
 	int GetTimer();
-	void ChangeScore(int _changeBy);
+	void ChangeTimer(int _changeBy);
 
 private:
 	//Data

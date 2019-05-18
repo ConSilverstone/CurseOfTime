@@ -125,18 +125,23 @@
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Box.cpp" />
+    <ClCompile Include="Collagen.cpp" />
     <ClCompile Include="Diamond.cpp" />
     <ClCompile Include="Dirt.cpp" />
+    <ClCompile Include="Electricity.cpp" />
     <ClCompile Include="Exit.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GridObject.cpp" />
+    <ClCompile Include="Hydrogen.cpp" />
     <ClCompile Include="Killzone.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Potion.cpp" />
     <ClCompile Include="ResetButton.cpp" />
     <ClCompile Include="Spike.cpp" />
     <ClCompile Include="SpriteObject.cpp" />
+    <ClCompile Include="Sulphur.cpp" />
     <ClCompile Include="TextObject.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Wall.cpp" />
@@ -144,18 +149,22 @@
   <ItemGroup>
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Box.h" />
+    <ClInclude Include="Collagen.h" />
     <ClInclude Include="Diamond.h" />
     <ClInclude Include="Dirt.h" />
+    <ClInclude Include="Electricity.h" />
     <ClInclude Include="Exit.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GridObject.h" />
+    <ClInclude Include="Hydrogen.h" />
     <ClInclude Include="Killzone.h" />
     <ClInclude Include="Level.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Potion.h" />
     <ClInclude Include="ResetButton.h" />
     <ClInclude Include="Spike.h" />
     <ClInclude Include="SpriteObject.h" />
-    <ClInclude Include="TextObject.h" />
+    <ClInclude Include="Sulphur.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Wall.h" />
   </ItemGroup>
