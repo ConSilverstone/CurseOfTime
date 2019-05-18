@@ -28,6 +28,7 @@ Level::Level()
 	, m_currentLevel(0)
 	, m_background()
 	, m_contents()
+	, m_updateList()
 	, m_drawListUI()
 	, m_levelDiamonds(0)
 	, m_pendingLoad()
@@ -216,9 +217,16 @@ void Level::LoadLevel(int _levelToLoad)
 			}
 		}
 	}
+
+	// Delete UI data already in the level
+	for (int i = 0; i < m_updateList.size(); ++i)
+	{
+		delete m_updateList[i];
+	}
 	
 	// Clear out our lists
 	m_background.clear();
+	m_updateList.clear();
 	m_contents.clear();
 	m_drawListUI.clear();
 	m_collisionList.clear();
@@ -368,6 +376,7 @@ void Level::LoadLevel(int _levelToLoad)
 		// UI Objects that are now drawn via level character scripts
 		Timer* ourTimer = new Timer();
 		ourTimer->SetPlayer(player);
+		m_updateList.push_back(ourTimer);
 		m_drawListUI.push_back(ourTimer);
 
 		Collagen* collagen = new Collagen();
