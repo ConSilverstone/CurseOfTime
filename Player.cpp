@@ -9,6 +9,7 @@
 # include "Box.h"
 # include "Wall.h"
 # include "Spike.h"
+# include "Killzone.h"
 
 // Constants
 #define SPEED 500.0f
@@ -100,19 +101,6 @@ void Player::Update(sf::Time _frameTime)
 
 void Player::Collide(GameObject& _collider)
 {
-	///////////
-	///WALLS///
-	///////////
-
-	//Record whether we used to be touching the ground
-	bool wereTouchingGround = m_touchingGround;
-	//Assume we did not collide
-	m_touchingGround = false;
-	//Record whether we used to be touching the ground
-	bool wereTouchingWall = m_touchingWall;
-	//Assume we did not collide
-	m_touchingWall = false;
-
 	//Get the collider for the player
 	sf::FloatRect playerCollider = m_sprite.getGlobalBounds();
 
@@ -122,9 +110,14 @@ void Player::Collide(GameObject& _collider)
 	feetCollider.top += playerCollider.height - 5;
 	// Set our feet collider height to be 5 pixels
 	feetCollider.height = 5;
+	// Shorten the width to not mess with the other colliders
+	feetCollider.width -= 10;
+	feetCollider.left += 5;
 
 	// Create head collider
 	sf::FloatRect headCollider = playerCollider;
+	// Set our head top to be 5 pixels from the top of the player collider
+	headCollider.top += 5;
 	// Set our head collider height to be 5 pixels
 	headCollider.height = 5;
 	// Shorten the width to not mess with the other colliders
@@ -142,6 +135,19 @@ void Player::Collide(GameObject& _collider)
 	sf::FloatRect leftCollider = playerCollider;
 	// Set our left side collider width to be 5 pixels
 	leftCollider.width = 5;
+
+	///////////
+	///WALLS///
+	///////////
+
+	//Record whether we used to be touching the ground
+	bool wereTouchingGround = m_touchingGround;
+	//Assume we did not collide
+	m_touchingGround = false;
+	//Record whether we used to be touching the ground
+	bool wereTouchingWall = m_touchingWall;
+	//Assume we did not collide
+	m_touchingWall = false;
 
 	// Only do something if the thing
 	// we touched was a wall
@@ -165,6 +171,9 @@ void Player::Collide(GameObject& _collider)
 		//Set it to the bottom of the platform - 5
 		platformBottom.height += wallCollider->GetBounds().height - 5;
 		platformTop.height = 10;
+		// Shorten the width to not mess with the other colliders
+		platformBottom.width -= 10;
+		platformBottom.left += 5;
 
 		//Create a collider for the right hand side of the platform
 		sf::FloatRect platformRight = wallCollider->GetBounds();
@@ -231,6 +240,41 @@ void Player::Collide(GameObject& _collider)
 		}
 	}
 
+	//// Dynamic cast the GameObject ref
+	//// if it succeeds, it was a box
+	Box* boxCollider = dynamic_cast<Box*>(&_collider);
+
+	if (boxCollider != nullptr)
+	{
+		// We did hit a box, now we need to move it based on the velocity of the player!
+	}
+
+	Exit* exitCollider = dynamic_cast<Exit*>(&_collider);
+
+	if (exitCollider != nullptr)
+	{
+		// We hit the exit, meaning that the player has beaten the level, reset and load next level.
+			m_gameStart = false;
+			m_timerCountdown = 60.0f;
+			m_level->LoadNextLevel();
+		
+	}
+
+	//////////////
+	///Killzone///
+	//////////////
+
+
+	// Dynamic cast the GameObject ref
+	// if it succeeds, it was a killzone
+	Killzone* killzoneCollider = dynamic_cast<Killzone*>(&_collider);
+
+	if (killzoneCollider != nullptr)
+	{
+		// We did hit a killzone! Kill the player
+		m_level->ReloadLevel();
+	}
+
 	////////////
 	///Spikes///
 	////////////
@@ -243,15 +287,6 @@ void Player::Collide(GameObject& _collider)
 	{
 		// We did hit a spike! Kill the player
 		m_level->ReloadLevel();
-	}
-
-	// Dynamic cast the GameObject ref
-	// if it succeeds, it was a box
-	Box* boxCollider = dynamic_cast<Box*>(&_collider);
-
-	if (boxCollider != nullptr)
-	{
-		// We did hit a box, now we need to move it based on the velocity of the player!
 	}
 }
 

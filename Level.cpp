@@ -8,6 +8,7 @@
 #include "Diamond.h"
 #include "Exit.h"
 #include "Spike.h"
+#include "Killzone.h"
 #include "Timer.h"
 
 // Library Includes
@@ -226,9 +227,12 @@ void Level::LoadLevel(int _levelToLoad)
 		m_background.push_back(std::vector<sf::Sprite>());
 		m_contents.push_back(std::vector<std::vector< GridObject*> >());
 
-		// Create the player first as other objects will need to reference it
+		// Create the player first as other objects will need to reference it (Collisions)
 		Player* player = new Player();
 		m_player = player;
+
+		// Create the wall first as other objects will need to reference it (Collisions)
+		Wall* wall = new Wall();
 
 		// Read each character one by one from the file...
 		char ch;
@@ -295,6 +299,8 @@ void Level::LoadLevel(int _levelToLoad)
 					box->SetLevel(this);
 					box->SetGridPosition(x, y);
 					m_contents[y][x].push_back(box);
+					m_collisionList.push_back(std::make_pair(player, box));
+					m_collisionList.push_back(std::make_pair(wall, box));
 				}
 				else if (ch == 'D')
 				{
@@ -310,6 +316,7 @@ void Level::LoadLevel(int _levelToLoad)
 					exit->SetLevel(this);
 					exit->SetGridPosition(x, y);
 					m_contents[y][x].push_back(exit);
+					m_collisionList.push_back(std::make_pair(player, exit));
 				}
 				else if (ch == 'S')
 				{
@@ -318,6 +325,14 @@ void Level::LoadLevel(int _levelToLoad)
 					spike->SetGridPosition(x, y);
 					m_contents[y][x].push_back(spike);
 					m_collisionList.push_back(std::make_pair(player, spike));
+				}
+				else if (ch == 'K')
+				{
+					Killzone* killzone = new Killzone();
+					killzone->SetLevel(this);
+					killzone->SetGridPosition(x, y);
+					m_contents[y][x].push_back(killzone);
+					m_collisionList.push_back(std::make_pair(player, killzone));
 				}
 				else
 				{
