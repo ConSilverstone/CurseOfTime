@@ -5,7 +5,7 @@
 Collagen::Collagen()
   : m_player(nullptr)
 {
-	m_sprite.setTexture(AssetManager::GetTexture("graphics/HighSpike.png"));
+	m_sprite.setTexture(AssetManager::GetTexture("graphics/Collagen.png"));
 	m_sprite.setPosition(300, sf::VideoMode::getDesktopMode().height - 100);
 }
 

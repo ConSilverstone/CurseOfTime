@@ -13,6 +13,7 @@ Box::Box()
 	: GridObject()
 	, m_touchingGround(false)
 	, m_touchingWall(false)
+	, m_player(nullptr)
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/box.png"));
 	m_blocksMovement = true;
@@ -20,6 +21,8 @@ Box::Box()
 
 void Box::Update(sf::Time _frameTime)
 {
+	// First we assume that the box isn't moving
+	m_velocity.x = 0.0f;
 
 	//Apply gravity to our velocity
 	if (m_touchingGround == false)
@@ -57,7 +60,7 @@ void Box::Collide(GameObject& _collider)
 	// if it succeeds, it was a wall
 	Wall* wallCollider = dynamic_cast<Wall*>(&_collider);
 
-	// If it was a wall we hit, we need to more ourselves
+	// If it was a wall we hit, we need to move ourselves
 	// outside the wall's bounds, aka back where we were
 	if (wallCollider != nullptr)
 	{
@@ -65,7 +68,7 @@ void Box::Collide(GameObject& _collider)
 		m_touchingGround = true;
 
 		//Check if we are falling downward
-		if (wereTouchingGround == false && m_velocity.y > 0)
+		if (wereTouchingGround == false && m_velocity.y < 0)
 		{
 			//We have touched the ground
 			m_velocity.y = 0;

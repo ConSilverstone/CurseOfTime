@@ -1,9 +1,16 @@
-W W W W W W W W W W W W W W W W
-W C P W B B R R B W B R R R R W
-W R R W R R D R R W R R D B R W
-W R R W B R W R B W R R W R R W
-W R B W R R W R R W R B W R R W
-W R B W R B W B R W R R W R R W
-W R R R R R W R R B B R W R B W
-W R R D R B W B R D R R W R D W
-W W W W W W W W W W W W W W W W
+W W W W W W W W W W W W W W W W W W W W W W W W
+W S S S S - - - - - - - - - - - - - - - - - - W
+W S - - - - - - - - - - - - - - - - - - - - - W
+W S - - - - - S W W W S S S S S S S S S W - - W
+W S - - - - - S W W W W W W W W W W W W W - - W
+W S - - - - - S W - - - - - S - - - - - W - - W
+W S - - - - - - W - - - - - - - - - E - W - - W
+W S - - - - - - W - - - - - - - - - - - W - - W
+W S - - - - - - W W - - - W W W W W W W W F F W
+W W W W W W W - W - - - - - W - - - - - 1 - - W
+W W S S S S W - W - - - - - W - - - - - 1 - - W
+W W - - - - W - W - - - - - W - - W W W W W W W
+W - - - - - - - W - - - - - W - - 1 - - - - - W
+W - - - - - W W W S - - - S W - - 1 - - - - - W
+W - - - - - - S W S - - - S W - - 1 - - S W - W
+W - - - - - - - W - - - - - W - - 1

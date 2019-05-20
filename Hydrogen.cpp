@@ -5,8 +5,8 @@
 Hydrogen::Hydrogen()
 	: m_player(nullptr)
 {
-	m_sprite.setTexture(AssetManager::GetTexture("graphics/HighSpike.png"));
-	m_sprite.setPosition(400, sf::VideoMode::getDesktopMode().height - 100);
+	m_sprite.setTexture(AssetManager::GetTexture("graphics/Hydrogen.png"));
+	m_sprite.setPosition(510, sf::VideoMode::getDesktopMode().height - 100);
 }
 
 void Hydrogen::Update(sf::Time _frameTime)

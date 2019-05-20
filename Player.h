@@ -4,6 +4,8 @@
 #include "SFML/Audio.hpp"
 #include "GridObject.h"
 
+class Potion;
+
 class Player : public GridObject
 {
 //public:
@@ -46,8 +48,26 @@ private:
 	sf::Vector2i m_pendingMove;
 	float m_timerCountdown;
 
+	//Class References
+	Potion* m_potion;
+
+	//An enum state structure to check which element is active, 
+	//none is a state as the player may wish to deselect an element
+	enum PotionEffects
+	{
+		none
+		, Sulphur
+		, Collagen
+		, Hydrogen
+		, Electricity
+	};
+
+	PotionEffects potionState;
+	PotionEffects previousPotionState;
+
 	//State
-	bool m_touchingGround;
+	bool m_touchingSurface;
+	bool m_touchingRoof;
 	bool m_touchingWall;
 	bool m_gameStart;
 };

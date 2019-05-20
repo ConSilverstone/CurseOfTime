@@ -12,12 +12,16 @@
 #include "Spike.h"
 #include "Killzone.h"
 #include "Timer.h"
+#include "WaterDown.h"
+#include "WaterSide.h"
+#include "CrackedWall.h"
 
 // Project Includes (Elemental Effects)
 #include "Collagen.h"
 #include "Hydrogen.h"
 #include "Sulphur.h"
 #include "Electricity.h"
+#include "Potion.h"
 
 // Library Includes
 #include <iostream>
@@ -331,8 +335,8 @@ void Level::LoadLevel(int _levelToLoad)
 					box->SetLevel(this);
 					box->SetGridPosition(x, y);
 					m_contents[y][x].push_back(box);
-					m_collisionList.push_back(std::make_pair(player, box));
 					m_collisionList.push_back(std::make_pair(wall, box));
+					m_collisionList.push_back(std::make_pair(player, box));
 				}
 				else if (ch == 'D')
 				{
@@ -366,6 +370,30 @@ void Level::LoadLevel(int _levelToLoad)
 					m_contents[y][x].push_back(killzone);
 					m_collisionList.push_back(std::make_pair(player, killzone));
 				}
+				else if (ch == '1')
+				{
+					WaterDown* waterdown = new WaterDown();
+					waterdown->SetLevel(this);
+					waterdown->SetGridPosition(x, y);
+					m_contents[y][x].push_back(waterdown);
+					m_collisionList.push_back(std::make_pair(player, waterdown));
+				}
+				else if (ch == '2')
+				{
+					WaterSide* waterside = new WaterSide();
+					waterside->SetLevel(this);
+					waterside->SetGridPosition(x, y);
+					m_contents[y][x].push_back(waterside);
+					m_collisionList.push_back(std::make_pair(player, waterside));
+				}
+				else if (ch == 'F')
+				{
+					CrackedWall* crackedwall = new CrackedWall();
+					crackedwall->SetLevel(this);
+					crackedwall->SetGridPosition(x, y);
+					m_contents[y][x].push_back(crackedwall);
+					m_collisionList.push_back(std::make_pair(player, crackedwall));
+				}
 				else
 				{
 					std::cerr << "Unrecognised character in level file: " << ch;
@@ -383,6 +411,24 @@ void Level::LoadLevel(int _levelToLoad)
 		collagen->SetPlayer(player);
 		m_drawListUI.push_back(collagen);
 
+		Hydrogen* hydrogen = new Hydrogen();
+		hydrogen->SetPlayer(player);
+		m_drawListUI.push_back(hydrogen);
+
+		Sulphur* sulphur = new Sulphur();
+		sulphur->SetPlayer(player);
+		m_drawListUI.push_back(sulphur);
+
+		Electricity* electricity = new Electricity();
+		electricity->SetPlayer(player);
+		m_drawListUI.push_back(electricity);
+
+		//Draw the potion for the purpose of throwing
+		Potion* potion = new Potion();
+		potion->SetLevel(this);
+		potion->SetGridPosition(x,y);
+		potion->SetPlayer(m_player);
+		m_contents[y][x].push_back(potion);
 
 		// Close the file now that we are done with it
 		inFile.close();

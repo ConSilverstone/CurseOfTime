@@ -2,6 +2,7 @@
 
 // Project Includes
 #include "GridObject.h"
+#include "Player.h"
 
 // Library Includes
 #include <SFML/Graphics.hpp>
@@ -37,7 +38,7 @@ private:
 	bool m_pendingReload;
 	
 	// Class References
-	GameObject* m_player;
+	Player* m_player;
 	GameObject* m_wall;
 	GameObject* m_timer;
 

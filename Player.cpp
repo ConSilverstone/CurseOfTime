@@ -10,6 +10,7 @@
 # include "Wall.h"
 # include "Spike.h"
 # include "Killzone.h"
+# include "Potion.h"
 
 // Constants
 #define SPEED 500.0f
@@ -21,10 +22,13 @@ Player::Player()
 	, m_pendingMove(0, 0)
 	, m_playerMoveSound()
 	, m_playerBumpingSound()
-	, m_touchingGround(false)
+	, m_touchingSurface(false)
 	, m_touchingWall(false)
 	, m_timerCountdown(60.00)
 	, m_gameStart(false)
+	, m_potion(nullptr)
+	, potionState(none)
+	, previousPotionState(none)
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
 	m_playerMoveSound.setBuffer(AssetManager::GetSoundBuffer("audio/footstep1.ogg"));
@@ -37,12 +41,16 @@ void Player::Update(sf::Time _frameTime)
 	// First, assume no keys are pressed
 	m_velocity.x = 0.0f;
 
+	////////////////
+	/// CONTROLS ///
+	////////////////
+
 	// Use the keyboard function to check 
 	// which keys are currently held down
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingGround == true)
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingSurface == true)
 	{
 		m_velocity.y = JUMP_SPEED;
-		m_touchingGround = false;
+		m_touchingSurface = false;
 		m_gameStart = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
@@ -51,7 +59,7 @@ void Player::Update(sf::Time _frameTime)
 		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
 		m_gameStart = true;
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && m_touchingGround == false)
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && m_touchingSurface == false)
 	{
 		m_velocity.y = SPEED;
 		m_gameStart = true;
@@ -63,8 +71,42 @@ void Player::Update(sf::Time _frameTime)
 		m_gameStart = true;
 	}
 
+	///////////////////
+	// Potion States //
+	///////////////////
+
+// ELEMENT CONTROLS //
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+	{
+		// The player has pressed the 1 key, first we need to check if this element is already active.
+		if (potionState == Sulphur)
+		{
+			// It is active, meaning that the player wishes to deactivate this element
+			potionState = none;
+		}
+		if (potionState == none)
+		{
+			// It is not active, meaning that the player wishes to activate this element
+			potionState = Sulphur;
+		}
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+	{
+		// The player has pressed the 1 key, first we need to check if this element is already active.
+		if (potionState == Collagen)
+		{
+			// It is active, meaning that the player wishes to deactivate this element
+			potionState = none;
+		}
+		if (potionState == none)
+		{
+			// It is not active, meaning that the player wishes to activate this element
+			potionState = Collagen;
+		}
+	}
+
 	//Apply gravity to our velocity
-	if (m_touchingGround == false)
+	if (m_touchingSurface == false)
 	{
 		float velocityChange = (GRAVITY * _frameTime.asSeconds()) * 2;
 		m_velocity.y += velocityChange;
@@ -76,11 +118,11 @@ void Player::Update(sf::Time _frameTime)
 	//Set the player back to not touching ground by default, 
 	//so that the player will drop if they aren't standing on the ground.
 	//Has to be before update for level spawing so they don't just drop through a platform has they spawn in.
-	m_touchingGround = false;
+	m_touchingSurface = false;
 	m_touchingWall = false;
 
 	//If the game has started, down down from 60 seconds
-	if (m_gameStart = true)
+	if (m_gameStart == true)
 	{
 		m_timerCountdown -= _frameTime.asSeconds();
 	}
@@ -133,6 +175,9 @@ void Player::Collide(GameObject& _collider)
 
 	//Create a collider for the right hand side of the player
 	sf::FloatRect leftCollider = playerCollider;
+	// Set our head collider height to be 5 pixels
+	leftCollider.height -= 4;
+	leftCollider.top += 2;
 	// Set our left side collider width to be 5 pixels
 	leftCollider.width = 5;
 
@@ -141,9 +186,9 @@ void Player::Collide(GameObject& _collider)
 	///////////
 
 	//Record whether we used to be touching the ground
-	bool wereTouchingGround = m_touchingGround;
+	bool wereTouchingSurface = m_touchingSurface;
 	//Assume we did not collide
-	m_touchingGround = false;
+	m_touchingSurface = false;
 	//Record whether we used to be touching the ground
 	bool wereTouchingWall = m_touchingWall;
 	//Assume we did not collide
@@ -191,29 +236,46 @@ void Player::Collide(GameObject& _collider)
 		if (feetCollider.intersects(platformTop))
 		{
 			// We are now touching the ground!
-			m_touchingGround = true;
+			m_touchingSurface = true;
 
-			//Check if we are falling downward
-			if (wereTouchingGround == false && m_velocity.y > 0)
-			{
-				//We have touched the ground
-				m_velocity.y = 0;
-				m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y - m_sprite.getGlobalBounds().height);
-			}
+				//Check if we are falling downward
+				if (wereTouchingSurface == false && m_velocity.y > 0)
+				{
+					//We have touched the ground
+					m_velocity.y = 0;
+					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y - m_sprite.getGlobalBounds().height);
+				}
+			
 		}
 
 		// Is the head touching the bottom of the platform?
 		if (headCollider.intersects(platformBottom))
 		{
 			// We are now touching the ground!
-			//m_touchingGround = true;
+			// Is the player's active element collagen?
 
-			//Check if we are jumping
-			if (wereTouchingGround == false && m_velocity.y < 0)
+			if (potionState == Collagen)
 			{
-				//We have touched the roof
-				m_velocity.y = 0;
-				m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height);
+				m_touchingSurface = true;
+				//Yes it is, sticky movement
+				//Check if we are jumping
+				if (wereTouchingSurface == false && m_velocity.y <= 0)
+				{
+					//We have touched the roof
+					m_velocity.y = 0;
+					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height);
+				}
+			}
+			else 
+			{
+				// No it is not, normal movement
+				//Check if we are jumping
+				if (wereTouchingSurface == false && m_velocity.y < 0)
+				{
+					//We have touched the roof
+					m_velocity.y = 0;
+					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height);
+				}
 			}
 		}
 
@@ -221,21 +283,56 @@ void Player::Collide(GameObject& _collider)
 		{
 			m_touchingWall = true;
 
-			if (wereTouchingWall == false && m_velocity.x > 0)
+			//// Is the player's active element collagen?
+
+			if (potionState == Collagen)
 			{
-				m_velocity.x = 0;
-				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+				// Yes it is, sticky movement
+
+				// Allow the player to jump from wall while touching.
+				m_touchingSurface = true;
+
+				if (wereTouchingWall == false && m_velocity.x >= 0)
+				{
+					m_velocity.x = 0;
+					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+				}
+			}
+			else 
+			{
+				// No it is not, normal movement
+				if (wereTouchingWall == false && m_velocity.x > 0)
+				{
+					m_velocity.x = 0;
+					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+				}
 			}
 		}
 
 		if (leftCollider.intersects(platformRight))
 		{
 			m_touchingWall = true;
+			
+			// Is the player's active element collagen?
 
-			if (wereTouchingWall == false && m_velocity.x < 0)
+			if (potionState == Collagen)
 			{
-				m_velocity.x = 0;
-				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+				m_touchingSurface = true;
+				// Yes it is, sticky movement
+				if (wereTouchingWall == false && m_velocity.x <= 0)
+				{
+					m_velocity.x = 0;
+					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+				}
+			}
+			else 
+			{
+				// No it isn't, normal movement
+				if (wereTouchingWall == false && m_velocity.x < 0)
+				{
+					m_velocity.x = 0;
+					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+				}
 			}
 		}
 	}

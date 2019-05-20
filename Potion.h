@@ -4,6 +4,8 @@
 #include "SFML/Audio.hpp"
 #include "GridObject.h"
 
+class Player;
+
 class Potion : public GridObject
 {
 public:
@@ -13,14 +15,24 @@ public:
 	virtual void Update(sf::Time _frameTime);
 	virtual void Collide(GameObject& _collider);
 
-private:
-	
 	//Data
+	//An enum state structure to check which element is active, 
+	//none is a state as the player may wish to deselect an element
 	enum PotionEffects
 	{
-		 Sulphur
-		,Collagen
-		,Hydrogen
-		,Electricity
+		none
+		, Sulphur
+		, Collagen
+		, Hydrogen
+		, Electricity
 	};
+
+	// Public Methods
+	void SetPlayer(Player* _player);
+
+private:
+	
+	// Class References
+	Player* m_player;
+
 };
