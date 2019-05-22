@@ -90,6 +90,9 @@
     <ClCompile Include="CrackedWall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Delay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObject.h">
@@ -159,6 +162,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CrackedWall.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Delay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

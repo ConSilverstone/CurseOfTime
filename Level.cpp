@@ -15,6 +15,7 @@
 #include "WaterDown.h"
 #include "WaterSide.h"
 #include "CrackedWall.h"
+#include "Delay.h"
 
 // Project Includes (Elemental Effects)
 #include "Collagen.h"
@@ -41,8 +42,10 @@ Level::Level()
 	, m_hasGravity(false)
 	, m_touchingGround(false)
 	, m_player(nullptr)
+	, m_potion(nullptr)
 	, m_wall(nullptr)
 	, m_timer(nullptr)
+	, m_delay(nullptr)
 	, m_collisionList()
 {
 	LoadLevel(1);
@@ -80,6 +83,12 @@ void Level::Draw(sf::RenderTarget & _target)
 				m_contents[y][x][z]->Draw(_target);
 			}
 		}
+	}
+
+	// Draw the potion upon update //
+	if (m_potion)
+	{
+		m_potion->Draw(_target);
 	}
 
 	// Reset View
@@ -137,6 +146,7 @@ void Level::Update(sf::Time _frameTime)
 	}
 
 	// Collision detection
+	// Handler is the thing moving, handler is the thing moved into
 	for (int i = 0; i < m_collisionList.size(); ++i)
 	{
 
@@ -150,6 +160,13 @@ void Level::Update(sf::Time _frameTime)
 				handler->Collide(*collider);
 			}
 		}
+	}
+
+
+	// Update the potion to allow it to draw //
+	if (m_potion != nullptr)
+	{
+		m_potion->Update(_frameTime);
 	}
 }
 
@@ -266,9 +283,11 @@ void Level::LoadLevel(int _levelToLoad)
 		Player* player = new Player();
 		m_player = player;
 
+		std::vector<GameObject*> walls;
+		std::vector<GameObject*> boxes;
+
 		// Create the wall first as other objects will need to reference it (Collisions)
-		Wall* wall = new Wall();
-		m_wall = wall;
+		
 
 		// Read each character one by one from the file...
 		char ch;
@@ -314,6 +333,7 @@ void Level::LoadLevel(int _levelToLoad)
 					wall->SetGridPosition(x, y);
 					m_contents[y][x].push_back(wall);
 					m_collisionList.push_back(std::make_pair(player, wall));
+					walls.push_back(wall);
 				}
 				else if (ch == 'P')
 				{
@@ -335,8 +355,8 @@ void Level::LoadLevel(int _levelToLoad)
 					box->SetLevel(this);
 					box->SetGridPosition(x, y);
 					m_contents[y][x].push_back(box);
-					m_collisionList.push_back(std::make_pair(wall, box));
 					m_collisionList.push_back(std::make_pair(player, box));
+					boxes.push_back(box);
 				}
 				else if (ch == 'D')
 				{
@@ -401,11 +421,28 @@ void Level::LoadLevel(int _levelToLoad)
 			}
 		}
 
+		for (int i = 0; i < boxes.size(); ++i)
+		{
+			GameObject* thisParticularBox = boxes[i];
+
+			for (int j = 0; j < walls.size(); ++j)
+			{
+				GameObject* thisParticularWall = walls[j];
+
+				m_collisionList.push_back(std::make_pair(thisParticularBox, thisParticularWall));
+			}
+		}
+
 		// UI Objects that are now drawn via level character scripts
 		Timer* ourTimer = new Timer();
 		ourTimer->SetPlayer(player);
 		m_updateList.push_back(ourTimer);
 		m_drawListUI.push_back(ourTimer);
+
+		Delay* delay = new Delay();
+		delay->SetPlayer(player);
+		m_updateList.push_back(delay);
+		m_drawListUI.push_back(delay);
 
 		Collagen* collagen = new Collagen();
 		collagen->SetPlayer(player);
@@ -423,12 +460,6 @@ void Level::LoadLevel(int _levelToLoad)
 		electricity->SetPlayer(player);
 		m_drawListUI.push_back(electricity);
 
-		//Draw the potion for the purpose of throwing
-		Potion* potion = new Potion();
-		potion->SetLevel(this);
-		potion->SetPlayer(m_player);
-		m_contents[y][x].push_back(potion);
-
 		// Close the file now that we are done with it
 		inFile.close();
 }
@@ -441,6 +472,16 @@ void Level::ReloadLevel()
 void Level::LoadNextLevel()
 {
 		m_pendingLoad = m_currentLevel + 1;
+}
+
+void Level::CreatePotion()
+{
+	//Draw the potion for the purpose of throwing
+	Potion* potion = new Potion();
+	m_potion = potion;
+	m_potion->SetLevel(this);
+	m_potion->SetPlayer(m_player);
+	m_player->SetPotion(m_potion);
 }
 
 float Level::GetCellSize()

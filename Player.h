@@ -39,7 +39,10 @@ public:
 
 	// Public Player Methods
 	int GetTimer();
+	int GetDelay();
 	void ChangeTimer(int _changeBy);
+	void ChangeDelay(int _changeBy);
+	void SetPotion(Potion* _potion);
 
 private:
 	//Data
@@ -47,6 +50,8 @@ private:
 	sf::Sound m_playerBumpingSound;
 	sf::Vector2i m_pendingMove;
 	float m_timerCountdown;
+	//For the Potion and PotionEffects
+	float m_keyDelay;
 
 	//Class References
 	Potion* m_potion;
@@ -70,4 +75,5 @@ private:
 	bool m_touchingRoof;
 	bool m_touchingWall;
 	bool m_gameStart;
+	bool m_keyBeenPressed;
 };

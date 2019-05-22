@@ -7,6 +7,9 @@
 // Library Includes
 #include <SFML/Graphics.hpp>
 
+class Potion;
+class Delay;
+
 class Level
 {
 public:
@@ -22,6 +25,7 @@ public:
 	void LoadLevel(int _levelToLoad);
 	void ReloadLevel();
 	void LoadNextLevel();
+	void CreatePotion();
 
 	float GetCellSize();
 	bool MoveObjectTo(GridObject* _toMove, sf::Vector2i _targetPos);
@@ -39,6 +43,8 @@ private:
 	
 	// Class References
 	Player* m_player;
+	Potion* m_potion;
+	Delay* m_delay;
 	GameObject* m_wall;
 	GameObject* m_timer;
 

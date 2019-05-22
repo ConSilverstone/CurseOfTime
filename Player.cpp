@@ -14,8 +14,10 @@
 
 // Constants
 #define SPEED 300.0f
-#define JUMP_SPEED -300.0f
-#define GRAVITY 200.0f
+#define JUMP_SPEED -270.0f
+#define GRAVITY 220.0f
+#define PotionXVelocity 500.0f
+#define PotionYVelocity -300.0f
 
 Player::Player()
 	: GridObject()
@@ -24,7 +26,9 @@ Player::Player()
 	, m_playerBumpingSound()
 	, m_touchingSurface(false)
 	, m_touchingWall(false)
-	, m_timerCountdown(60.00)
+	, m_keyBeenPressed(false)
+	, m_timerCountdown(60.00f)
+	, m_keyDelay (3.00f)
 	, m_gameStart(false)
 	, m_potion(nullptr)
 	, potionState(none)
@@ -71,63 +75,87 @@ void Player::Update(sf::Time _frameTime)
 		m_gameStart = true;
 	}
 
-	///////////////////
-	// Potion States //
-	///////////////////
+	/////////////
+	// Potions //
+	/////////////
 
 	// ELEMENT CONTROLS //
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1) && potionState == Collagen)
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
 	{
+		// The player has pressed the 1 key, first we need to check if this element is already active.
+		if (potionState == Collagen && m_keyBeenPressed == false)
+		{
 			// It is active, meaning that the player wishes to deactivate this element
 			potionState = none;
-	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1) && potionState == none)
-	{
+			m_keyBeenPressed = true;
+		} 
+		else if (potionState == none && m_keyBeenPressed == false)
+		{
 			// It is not active, meaning that the player wishes to activate this element
 			potionState = Collagen;
+			m_keyBeenPressed = true;
+		}
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
 	{
 		// The player has pressed the 1 key, first we need to check if this element is already active.
-		if (potionState == Electricity)
+		if (potionState == Electricity && m_keyBeenPressed == false)
 		{
 			// It is active, meaning that the player wishes to deactivate this element
 			potionState = none;
+			m_keyBeenPressed = true;
 		}
-		if (potionState == none)
+		 else if (potionState == none && m_keyBeenPressed == false)
 		{
 			// It is not active, meaning that the player wishes to activate this element
 			potionState = Electricity;
+			m_keyBeenPressed = true;
 		}
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
 	{
 		// The player has pressed the 1 key, first we need to check if this element is already active.
-		if (potionState == Sulphur)
+		if (potionState == Sulphur && m_keyBeenPressed == false)
 		{
 			// It is active, meaning that the player wishes to deactivate this element
 			potionState = none;
+			m_keyBeenPressed = true;
 		}
-		if (potionState == none)
+		else if (potionState == none && m_keyBeenPressed == false)
 		{
 			// It is not active, meaning that the player wishes to activate this element
 			potionState = Sulphur;
+			m_keyBeenPressed = true;
 		}
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
 	{
-		// The player has pressed the 1 key, first we need to check if this element is already active.
-		if (potionState == Hydrogen)
+		// The player has pressed the 4 key, first we need to check if this element is already active.
+		if (potionState == Hydrogen && m_keyBeenPressed == false)
 		{
 			// It is active, meaning that the player wishes to deactivate this element
 			potionState = none;
+			m_keyBeenPressed = true;
 		}
-		if (potionState == none)
+		else if (potionState == none && m_keyBeenPressed == false)
 		{
 			// It is not active, meaning that the player wishes to activate this element
 			potionState = Hydrogen;
+			m_keyBeenPressed = true;
 		}
+	}
+
+	// Throwing a potion
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && potionState == Sulphur && m_keyBeenPressed == false)
+	{
+		m_level->CreatePotion();
+		if (m_potion != nullptr)
+			{ 
+				m_potion->SetPosition(m_sprite.getPosition());
+			}
+		m_keyBeenPressed = true;
+		m_gameStart = true;
 	}
 
 	//Apply gravity to our velocity
@@ -151,6 +179,11 @@ void Player::Update(sf::Time _frameTime)
 	{
 		m_timerCountdown -= _frameTime.asSeconds();
 	}
+	// A a potion key has been pressed, give a 3 second delay before the player can throw a potion again
+	if (m_keyBeenPressed = true)
+	{
+		m_keyDelay -= _frameTime.asSeconds();
+	}
 	//If the count down reaches 0, everything is reset for the current level.
 	if (m_timerCountdown <= 0)
 	{
@@ -158,6 +191,14 @@ void Player::Update(sf::Time _frameTime)
 		m_timerCountdown = 60.0f;
 		m_level->ReloadLevel();
 	}
+
+	// The key delay reaches 0, allow the player to throw a potion or use an element again.
+	if (m_keyDelay <= 0)
+	{
+		m_keyBeenPressed = false;
+		m_keyDelay = 3.0f;
+	}
+
 	//// Call the update function manually on 
 	//// the parent class
 	//// This will actually move the character
@@ -239,10 +280,11 @@ void Player::Collide(GameObject& _collider)
 		// Create platform bottom collider
 		sf::FloatRect platformBottom = wallCollider->GetBounds();
 		//Set it to the bottom of the platform - 5
-		platformBottom.height += wallCollider->GetBounds().height - 5;
+		platformBottom.top += wallCollider->GetBounds().height - 5;
+		platformBottom.height = 10;
 		// Shorten the width to not mess with the other colliders
-		platformBottom.width -= 10;
-		platformBottom.left += 5;
+		//platformBottom.width -= 10;
+		//platformBottom.left += 5;
 
 		//Create a collider for the right hand side of the platform
 		sf::FloatRect platformRight = wallCollider->GetBounds();
@@ -424,7 +466,23 @@ int Player::GetTimer()
 	return m_timerCountdown;
 }
 
+int Player::GetDelay()
+{
+	return m_keyDelay;
+}
+
+
 void Player::ChangeTimer(int _changeBy)
 {
 	m_timerCountdown += _changeBy;
+}
+
+void Player::ChangeDelay(int _changeBy)
+{
+	m_keyDelay += _changeBy;
+}
+
+void Player::SetPotion(Potion* _potion)
+{
+	m_potion = _potion;
 }

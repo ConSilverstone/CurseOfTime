@@ -3,7 +3,7 @@
 #include "Framework/AssetManager.h"
 
 // Constants
-#define xVelocity 500.0f
+#define xVelocity 300.0f
 #define yVelocity -300.0f
 #define GRAVITY 200.0f
 
@@ -23,7 +23,6 @@ void Potion::Update(sf::Time _frameTime)
 	{
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
-			m_sprite.setPosition(0,0);
 			m_velocity.x = xVelocity;
 			m_velocity.y = yVelocity;
 		}
