@@ -60,6 +60,11 @@ int main()
 
 		} // End event polling loop
 
+
+		// Set the mouse to the center of the screen to prevent cpu drops from moving it.
+		sf::Vector2i mousePosition = sf::Mouse::getPosition(gameWindow);
+		sf::Mouse::setPosition(sf::Vector2i(0, 0), gameWindow);
+
 		// -----------------------------------------------
 		// Update Section
 		// -----------------------------------------------

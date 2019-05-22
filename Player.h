@@ -56,10 +56,10 @@ private:
 	enum PotionEffects
 	{
 		none
-		, Sulphur
-		, Collagen
-		, Hydrogen
-		, Electricity
+		,Sulphur
+		,Collagen
+		,Hydrogen
+		,Electricity
 	};
 
 	PotionEffects potionState;

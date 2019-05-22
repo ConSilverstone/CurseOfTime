@@ -13,7 +13,7 @@
 # include "Potion.h"
 
 // Constants
-#define SPEED 500.0f
+#define SPEED 300.0f
 #define JUMP_SPEED -300.0f
 #define GRAVITY 200.0f
 
@@ -75,8 +75,33 @@ void Player::Update(sf::Time _frameTime)
 	// Potion States //
 	///////////////////
 
-// ELEMENT CONTROLS //
+	// ELEMENT CONTROLS //
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1) && potionState == Collagen)
+	{
+			// It is active, meaning that the player wishes to deactivate this element
+			potionState = none;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1) && potionState == none)
+	{
+			// It is not active, meaning that the player wishes to activate this element
+			potionState = Collagen;
+	}
+
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+	{
+		// The player has pressed the 1 key, first we need to check if this element is already active.
+		if (potionState == Electricity)
+		{
+			// It is active, meaning that the player wishes to deactivate this element
+			potionState = none;
+		}
+		if (potionState == none)
+		{
+			// It is not active, meaning that the player wishes to activate this element
+			potionState = Electricity;
+		}
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
 	{
 		// The player has pressed the 1 key, first we need to check if this element is already active.
 		if (potionState == Sulphur)
@@ -90,10 +115,10 @@ void Player::Update(sf::Time _frameTime)
 			potionState = Sulphur;
 		}
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
 	{
 		// The player has pressed the 1 key, first we need to check if this element is already active.
-		if (potionState == Collagen)
+		if (potionState == Hydrogen)
 		{
 			// It is active, meaning that the player wishes to deactivate this element
 			potionState = none;
@@ -101,7 +126,7 @@ void Player::Update(sf::Time _frameTime)
 		if (potionState == none)
 		{
 			// It is not active, meaning that the player wishes to activate this element
-			potionState = Collagen;
+			potionState = Hydrogen;
 		}
 	}
 
@@ -133,8 +158,6 @@ void Player::Update(sf::Time _frameTime)
 		m_timerCountdown = 60.0f;
 		m_level->ReloadLevel();
 	}
-
-	
 	//// Call the update function manually on 
 	//// the parent class
 	//// This will actually move the character
@@ -168,8 +191,8 @@ void Player::Collide(GameObject& _collider)
 
 	//Create a collider for the right hand side of the player
 	sf::FloatRect rightCollider = playerCollider;
-	//Set it to the right of the player -5
-	rightCollider.left += playerCollider.width - 5;
+	//Set it to the right of the player - 10
+	rightCollider.left += playerCollider.width - 10;
 	// Set our right side collider width to be 5 pixels
 	rightCollider.width = 5;
 
@@ -180,6 +203,8 @@ void Player::Collide(GameObject& _collider)
 	leftCollider.top += 2;
 	// Set our left side collider width to be 5 pixels
 	leftCollider.width = 5;
+	// Needed as the player can drop through the floor otherwise travelling left and down
+	leftCollider.left += 5;
 
 	///////////
 	///WALLS///
@@ -215,14 +240,13 @@ void Player::Collide(GameObject& _collider)
 		sf::FloatRect platformBottom = wallCollider->GetBounds();
 		//Set it to the bottom of the platform - 5
 		platformBottom.height += wallCollider->GetBounds().height - 5;
-		platformTop.height = 10;
 		// Shorten the width to not mess with the other colliders
 		platformBottom.width -= 10;
 		platformBottom.left += 5;
 
 		//Create a collider for the right hand side of the platform
 		sf::FloatRect platformRight = wallCollider->GetBounds();
-		//Set it to the right of the player -5
+		//Set it to the right of the platform -5
 		platformRight.left += platformRight.width - 5;
 		// Set our right side collider width to be 5 pixels
 		platformRight.width = 5;
@@ -256,6 +280,7 @@ void Player::Collide(GameObject& _collider)
 
 			if (potionState == Collagen)
 			{
+				//Reset the player's ability to move up
 				m_touchingSurface = true;
 				//Yes it is, sticky movement
 				//Check if we are jumping
@@ -266,8 +291,10 @@ void Player::Collide(GameObject& _collider)
 					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height);
 				}
 			}
-			else 
+			else if (potionState == none)
 			{
+				//Do not reset the player's ability to move up
+				m_touchingSurface = false;
 				// No it is not, normal movement
 				//Check if we are jumping
 				if (wereTouchingSurface == false && m_velocity.y < 0)
@@ -289,7 +316,7 @@ void Player::Collide(GameObject& _collider)
 			{
 				// Yes it is, sticky movement
 
-				// Allow the player to jump from wall while touching.
+				//Reset the player's ability to move up
 				m_touchingSurface = true;
 
 				if (wereTouchingWall == false && m_velocity.x >= 0)
@@ -298,8 +325,10 @@ void Player::Collide(GameObject& _collider)
 					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
 				}
 			}
-			else 
+			else if (potionState == none)
 			{
+				//Do not reset the player's ability to move up
+				m_touchingSurface = false;
 				// No it is not, normal movement
 				if (wereTouchingWall == false && m_velocity.x > 0)
 				{
@@ -317,6 +346,7 @@ void Player::Collide(GameObject& _collider)
 
 			if (potionState == Collagen)
 			{
+				//Reset the player's ability to move up
 				m_touchingSurface = true;
 				// Yes it is, sticky movement
 				if (wereTouchingWall == false && m_velocity.x <= 0)
@@ -325,8 +355,10 @@ void Player::Collide(GameObject& _collider)
 					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
 				}
 			}
-			else 
+			else if (potionState == none)
 			{
+				//Do not reset the player's ability to move up
+				m_touchingSurface = false;
 				// No it isn't, normal movement
 				if (wereTouchingWall == false && m_velocity.x < 0)
 				{

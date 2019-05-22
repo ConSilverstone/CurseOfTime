@@ -426,7 +426,6 @@ void Level::LoadLevel(int _levelToLoad)
 		//Draw the potion for the purpose of throwing
 		Potion* potion = new Potion();
 		potion->SetLevel(this);
-		potion->SetGridPosition(x,y);
 		potion->SetPlayer(m_player);
 		m_contents[y][x].push_back(potion);
 

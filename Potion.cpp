@@ -13,6 +13,7 @@ Potion::Potion()
 {
 	PotionEffects(none);
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/PotionVial.png"));
+	m_sprite.setPosition(0, 0);
 	m_blocksMovement = true;
 }
 
@@ -20,18 +21,19 @@ void Potion::Update(sf::Time _frameTime)
 {
 	if (m_player != nullptr)
 	{
-		if (PotionEffects(Sulphur) && sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
+			m_sprite.setPosition(0,0);
 			m_velocity.x = xVelocity;
 			m_velocity.y = yVelocity;
 		}
 	}
 	//Apply gravity to our velocity
-		//float velocityChange = (GRAVITY * _frameTime.asSeconds()) * 2;
-		//m_velocity.y += velocityChange;
+		float velocityChange = (GRAVITY * _frameTime.asSeconds()) * 2;
+		m_velocity.y += velocityChange;
 
 	//Move sprite base on velocity
-	//sf::Vector2f positionChange = m_velocity * _frameTime.asSeconds();
+	sf::Vector2f positionChange = m_velocity * _frameTime.asSeconds();
 
 	//// Call the update function manually on 
 	//// the parent class
@@ -42,9 +44,10 @@ void Potion::Update(sf::Time _frameTime)
 
 void Potion::Collide(GameObject & _collider)
 {
+
 }
 
 void Potion::SetPlayer(Player * _player)
 {
-
+	m_player = _player;
 }
