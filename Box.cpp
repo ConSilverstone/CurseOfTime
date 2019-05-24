@@ -47,44 +47,29 @@ void Box::Update(sf::Time _frameTime)
 void Box::Collide(GameObject& _collider)
 {
 	//Get the collider for the player
-	sf::FloatRect playerCollider = m_sprite.getGlobalBounds();
+	sf::FloatRect boxCollider = m_sprite.getGlobalBounds();
 
-	// Create feet collider
-	sf::FloatRect feetCollider = playerCollider;
-	// Set our feet top to be 10 pixels from the bottom of the player collider
-	feetCollider.top += playerCollider.height - 5;
-	// Set our feet collider height to be 5 pixels
-	feetCollider.height = 5;
-	// Shorten the width to not mess with the other colliders
-	feetCollider.width -= 10;
-	feetCollider.left += 5;
+		// Create platform top collider
+		sf::FloatRect boxTop = boxCollider;
+		boxTop.height = 10;
 
-	// Create head collider
-	sf::FloatRect headCollider = playerCollider;
-	// Set our head top to be 5 pixels from the top of the player collider
-	headCollider.top += 5;
-	// Set our head collider height to be 5 pixels
-	headCollider.height = 5;
-	// Shorten the width to not mess with the other colliders
-	headCollider.width -= 10;
-	headCollider.left += 5;
+		// Create platform bottom collider
+		sf::FloatRect boxBottom = boxCollider;
+		//Set it to the bottom of the platform - 5
+		boxBottom.top += boxCollider.height - 10;
+		boxBottom.height = 10;
 
-	//Create a collider for the right hand side of the player
-	sf::FloatRect rightCollider = playerCollider;
-	//Set it to the right of the player - 10
-	rightCollider.left += playerCollider.width - 10;
-	// Set our right side collider width to be 5 pixels
-	rightCollider.width = 5;
+		//Create a collider for the right hand side of the platform
+		sf::FloatRect boxRight = boxCollider;;
+		//Set it to the right of the platform -5
+		boxRight.left += boxRight.width - 5;
+		// Set our right side collider width to be 5 pixels
+		boxRight.width = 5;
 
-	//Create a collider for the right hand side of the player
-	sf::FloatRect leftCollider = playerCollider;
-	// Set our head collider height to be 5 pixels
-	leftCollider.height -= 4;
-	leftCollider.top += 2;
-	// Set our left side collider width to be 5 pixels
-	leftCollider.width = 5;
-	// Needed as the player can drop through the floor otherwise travelling left and down
-	leftCollider.left += 5;
+		//Create a collider for the left hand side of the platform
+		sf::FloatRect boxLeft = boxCollider;
+		// Set our left side collider width to be 5 pixels
+		boxLeft.width = 5;
 
 	///////////
 	///WALLS///
@@ -111,7 +96,7 @@ void Box::Collide(GameObject& _collider)
 	// outside the wall's bounds, aka back where we were
 	if (wallCollider != nullptr)
 	{
-		////Yes feet are touching
+		////Yes the box is touching
 		// Create platform top collider
 		sf::FloatRect platformTop = wallCollider->GetBounds();
 		platformTop.height = 10;
@@ -138,7 +123,7 @@ void Box::Collide(GameObject& _collider)
 		platformLeft.width = 5;
 
 		// Are the feet touching the top of the platform?
-		if (feetCollider.intersects(platformTop))
+		if (boxBottom.intersects(platformTop))
 		{
 			// We are now touching the ground!
 			m_touchingWall = true;
@@ -154,53 +139,145 @@ void Box::Collide(GameObject& _collider)
 		}
 
 		// Is the head touching the bottom of the platform?
-		if (headCollider.intersects(platformBottom))
+		if (boxTop.intersects(platformBottom))
 		{
 			// We are now touching the ground!
-
-				//Do not reset the player's ability to move up
-				m_touchingWall = false;
-				// No it is not, normal movement
-				//Check if we are jumping
-				if (wereTouchingWall == false && m_velocity.y < 0)
-				{
-					//We have touched the roof
-					m_velocity.y = 0;
-					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height);
-				}
-			}
-		}
-
-		if (rightCollider.intersects(platformLeft))
-		{
 			m_touchingWall = true;
 
-				//Do not reset the player's ability to move up
-				m_touchingWall = false;
-				// No it is not, normal movement
-				if (wereTouchingWall == false && m_velocity.x > 0)
-				{
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
-			
+			//Check if we are jumping
+			if (wereTouchingWall == false && m_velocity.y < 0)
+			{
+				//We have touched the roof
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height);
+			}
+
 		}
 
-		if (leftCollider.intersects(platformRight))
+		if (boxRight.intersects(platformLeft))
 		{
-				m_touchingWall = true;
+			// We are now touching the ground!
+			m_touchingWall = true;
+			
+			if (wereTouchingWall == false && m_velocity.x > 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+			}
 
-				//Do not reset the player's ability to move up
-				m_touchingWall = false;
-				// No it isn't, normal movement
-				if (wereTouchingWall == false && m_velocity.x < 0)
-				{
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
+		}
+
+		if (boxLeft.intersects(platformRight))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			if (wereTouchingWall == false && m_velocity.x < 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
 			}
 		}
-	
+	}
+
+	//////////////////
+	////// BOXES /////
+	//////////////////
+
+	// Dynamic cast the GameObject ref
+	// into a box pointer
+	// if it succeeds, it was a box
+	Box* collidedBoxCollider = dynamic_cast<Box*>(&_collider);
+
+	// If it was a box we hit, we need to move ourselves
+	// outside the box's bounds, aka back where we were
+	if (collidedBoxCollider != nullptr)
+	{
+		// Create platform top collider
+		sf::FloatRect boxWeAreTouchingTop = collidedBoxCollider->GetBounds();
+		boxWeAreTouchingTop.height = 10;
+
+		// Create platform bottom collider
+		sf::FloatRect boxWeAreTouchingBottom = collidedBoxCollider->GetBounds();
+		//Set it to the bottom of the platform - 5
+		boxWeAreTouchingBottom.top += collidedBoxCollider->GetBounds().height - 10;
+		boxWeAreTouchingBottom.height = 10;
+		// Shorten the width to not mess with the other colliders
+		boxWeAreTouchingBottom.width -= 10;
+		boxWeAreTouchingBottom.left += 5;
+
+		//Create a collider for the right hand side of the platform
+		sf::FloatRect boxWeAreTouchingRight = collidedBoxCollider->GetBounds();
+		//Set it to the right of the platform -5
+		boxWeAreTouchingRight.left += boxWeAreTouchingRight.width - 5;
+		// Set our right side collider width to be 5 pixels
+		boxWeAreTouchingRight.width = 5;
+
+		//Create a collider for the left hand side of the platform
+		sf::FloatRect boxWeAreTouchingLeft = collidedBoxCollider->GetBounds();
+		// Set our left side collider width to be 5 pixels
+		boxWeAreTouchingLeft.width = 5;
+
+		// Are the feet touching the top of the platform?
+		if (boxBottom.intersects(boxWeAreTouchingTop))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			//Check if we are falling downward
+			if (wereTouchingSurface == false && m_velocity.y > 0)
+			{
+				//We have touched the ground
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, collidedBoxCollider->getPosition().y - m_sprite.getGlobalBounds().height);
+			}
+
+		}
+
+		// Is the head touching the bottom of the platform?
+		if (boxTop.intersects(boxWeAreTouchingBottom))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			// No it is not, normal movement
+			//Check if we are jumping
+			if (wereTouchingWall == false && m_velocity.y < 0)
+			{
+				//We have touched the roof
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, collidedBoxCollider->getPosition().y + wallCollider->GetBounds().height);
+			}
+
+		}
+
+		if (boxRight.intersects(boxLeft))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			// No it is not, normal movement
+			if (wereTouchingWall == false && m_velocity.x > 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+			}
+
+		}
+
+		if (boxLeft.intersects(boxWeAreTouchingRight))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			// No it isn't, normal movement
+			if (wereTouchingWall == false && m_velocity.x < 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+			}
+		}
+	}
 }
 
 void Box::BoxSlide(sf::Vector2f _velocity)

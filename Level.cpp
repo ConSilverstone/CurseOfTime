@@ -421,15 +421,35 @@ void Level::LoadLevel(int _levelToLoad)
 			}
 		}
 
+		// This is the code that allows collision between all boxes and all walls.
 		for (int i = 0; i < boxes.size(); ++i)
 		{
+			// Each each box in this array...
 			GameObject* thisParticularBox = boxes[i];
 
 			for (int j = 0; j < walls.size(); ++j)
 			{
+				// ...and each wall in this array...
 				GameObject* thisParticularWall = walls[j];
 
+				// Create a pairing between the two.
 				m_collisionList.push_back(std::make_pair(thisParticularBox, thisParticularWall));
+			}
+		}
+
+		// This is the code that allows collision between boxes and other boxes
+		for (int i = 0; i < boxes.size(); ++i)
+		{
+			// Each each box in this array...
+			GameObject* thisBoxSet1 = boxes[i];
+
+			for (int j = 0; j < boxes.size(); ++j)
+			{
+				// ...and each box in the same array...
+				GameObject* thisBoxSet2 = boxes[j];
+
+				// Create a pairing between the two.
+				m_collisionList.push_back(std::make_pair(thisBoxSet1, thisBoxSet2));
 			}
 		}
 

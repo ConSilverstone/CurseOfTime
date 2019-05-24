@@ -4,6 +4,8 @@
 #include "SFML/Audio.hpp"
 #include "GridObject.h"
 
+
+// Forward Declaration //
 class Potion;
 
 class Player : public GridObject
@@ -40,8 +42,11 @@ public:
 	// Public Player Methods
 	int GetTimer();
 	int GetDelay();
+	int GetPotionState();
 	void ChangeTimer(int _changeBy);
 	void ChangeDelay(int _changeBy);
+
+	// To manipulate data in other code, we first need to set out pointer to mean something. //
 	void SetPotion(Potion* _potion);
 
 private:
@@ -52,6 +57,8 @@ private:
 	float m_timerCountdown;
 	//For the Potion and PotionEffects
 	float m_keyDelay;
+	// Creating a numerical value for each potion state, to change the texture based on if they are active
+	int m_numericalPotionState;
 
 	//Class References
 	Potion* m_potion;
@@ -61,10 +68,10 @@ private:
 	enum PotionEffects
 	{
 		none
-		,Sulphur
-		,Collagen
-		,Hydrogen
-		,Electricity
+		, Sulphur
+		, Collagen
+		, Hydrogen
+		, Electricity
 	};
 
 	PotionEffects potionState;

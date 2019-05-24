@@ -13,4 +13,17 @@ W W - - - - W - W - - - - - W - - W W W W W W W
 W - - - - - - - W - - - - - W - - 1 - - - - - W
 W - - - - - W W W S - - - S W - - 1 - - - - - W
 W - - - - - - S W S - - - S W - - 1 - - S W - W
-W - - - - - - - W - - - - - W - - 1
+W - - - - - - - W - - - - - W - - 1 - - S W - W
+W - - - - - - - W - - - - - W - - 1 - - S W - W
+W - B B B - - - W - - - - - W - - 1 - - S W - W
+W W W W W - W W W - - - - - W - - 1 - - S W - W
+W S S - - - - S W - W W W - W - - 1 - - S W - W
+W - - - - - - - W - - - - - W - - 1 - - S W - W
+W - - - - - - - W F F F F F W W W 1 W W W W - W
+W - - - - - - - W - - - - - W - - 1 S S S - - W
+W - - - - - - - W - - - - - W - - 1 - - - - - W
+W - - - - - - - W - - - - - W - - 1 - - - - - W
+W - - - - - - - W - - - - - W - - 1 - - - - - W
+W - P - - B - - W - - - - - - - - 1 - - - - - W
+W W W W W W W W W W W W W W W W W 1 - - - W W W
+- - - - - - - - - - - - - - - - K K K K K K - -
