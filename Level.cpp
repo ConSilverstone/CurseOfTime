@@ -283,10 +283,9 @@ void Level::LoadLevel(int _levelToLoad)
 		Player* player = new Player();
 		m_player = player;
 
+		// Create lists of all object being created by loading the level
 		std::vector<GameObject*> walls;
 		std::vector<GameObject*> boxes;
-
-		// Create the wall first as other objects will need to reference it (Collisions)
 		
 
 		// Read each character one by one from the file...
@@ -502,6 +501,31 @@ void Level::CreatePotion()
 	m_potion->SetLevel(this);
 	m_potion->SetPlayer(m_player);
 	m_player->SetPotion(m_potion);
+
+	// rows
+	for (int y = 0; y < m_contents.size(); ++y)
+	{
+		// cells
+		for (int x = 0; x < m_contents[y].size(); ++x)
+		{
+			//Sticky outies (grid objects)
+			for (int z = 0; z < m_contents[y][x].size(); ++z)
+			{
+				Wall* wall = dynamic_cast<Wall*>(m_contents[y][x][z]);
+				CrackedWall* crackedWall = dynamic_cast<CrackedWall*>(m_contents[y][x][z]);
+
+				if (wall != nullptr)
+				{
+					m_collisionList.push_back(std::make_pair(m_potion, wall));
+				}
+
+				if (crackedWall != nullptr)
+				{
+					m_collisionList.push_back(std::make_pair(m_potion, crackedWall));
+				}
+			}
+		}
+	}
 }
 
 float Level::GetCellSize()
@@ -549,32 +573,35 @@ bool Level::MoveObjectTo(GridObject * _toMove, sf::Vector2i _targetPos)
 	return false;
 }
 
-bool Level::deleteObjectAt(GridObject * _toDelete, sf::Vector2i _targetLocation)
+bool Level::deleteObjectAt(GridObject * _toDelete)
 {
-	if (_toDelete != nullptr && _targetLocation.y >= 0 && _targetLocation.y < m_contents.size()
-		&& _targetLocation.x >= 0 && _targetLocation.x < m_contents[_targetLocation.y].size())
+	if (_toDelete != nullptr)
 	{
 		// Get the current position of the grid object
 		sf::Vector2i oldPos = _toDelete->GetGridPosition();
 
 		// Find the object in the list using an iterator
 		// and find the method
-		auto it = std::find(m_contents[oldPos.y][oldPos.x].begin(),
+		/*auto it = std::find(m_contents[oldPos.y][oldPos.x].begin(),
 			m_contents[oldPos.y][oldPos.x].end(),
-			_toDelete);
+			_toDelete);*/
 
 		// If we found the object at this location,
 		// it will NOT equal the end of the vector
-		if (it != m_contents[oldPos.y][oldPos.x].end())
+		
+
+		//Find the object in the list using an iterator and the find method
+		for (auto it = m_collisionList.begin(); it != m_collisionList.end(); )
 		{
-			//We found the object!
-
-			//Remove it from the old position
-			m_contents[oldPos.y][oldPos.x].erase(it);
-
-			// Return success
-			return true;
+			// if second thing in pair is the "to be deleted" object, then, delete the pair
+			if (it->first == _toDelete)
+				it = m_collisionList.erase(it); // returns pointer to next thing in list, so we don't want to add to it ourselves
+			else
+				++it; // we didnt delete so add to it to go to the next thing in list
 		}
+
+		delete _toDelete;
+		m_potion = nullptr;
 	}
 
 	// return failure
