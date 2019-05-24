@@ -5,7 +5,6 @@
 //Project Includes (Objects)
 #include "Wall.h"
 #include "Player.h"
-#include "Dirt.h"
 #include "Box.h"
 #include "Diamond.h"
 #include "Exit.h"
@@ -341,13 +340,6 @@ void Level::LoadLevel(int _levelToLoad)
 					m_contents[y][x].push_back(player);
 					m_player = player;
 				}
-				else if (ch == 'R')
-				{
-					Dirt* dirt = new Dirt();
-					dirt->SetLevel(this);
-					dirt->SetGridPosition(x, y);
-					m_contents[y][x].push_back(dirt);
-				}
 				else if (ch == 'B')
 				{
 					Box* box = new Box();
@@ -582,9 +574,13 @@ bool Level::deleteObjectAt(GridObject * _toDelete)
 
 		// Find the object in the list using an iterator
 		// and find the method
-		/*auto it = std::find(m_contents[oldPos.y][oldPos.x].begin(),
-			m_contents[oldPos.y][oldPos.x].end(),
-			_toDelete);*/
+		// Only run this if we know we aren't looking for a potion.
+		if (m_potion = nullptr)
+		{
+			auto it = std::find(m_contents[oldPos.y][oldPos.x].begin(),
+				m_contents[oldPos.y][oldPos.x].end(),
+				_toDelete);
+		}
 
 		// If we found the object at this location,
 		// it will NOT equal the end of the vector
@@ -600,8 +596,11 @@ bool Level::deleteObjectAt(GridObject * _toDelete)
 				++it; // we didnt delete so add to it to go to the next thing in list
 		}
 
-		delete _toDelete;
-		m_potion = nullptr;
+		if (m_potion != nullptr)
+		{
+			delete _toDelete;
+			m_potion = nullptr;
+		}
 	}
 
 	// return failure

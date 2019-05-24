@@ -3,7 +3,6 @@
 # include "Framework/AssetManager.h"
 # include "Level.h"
 # include "SFML/Audio.hpp"
-# include "Dirt.h"
 # include "Diamond.h"
 # include "Exit.h"
 # include "Box.h"
@@ -57,7 +56,7 @@ void Player::Update(sf::Time _frameTime)
 
 	// Use the keyboard function to check 
 	// which keys are currently held down
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingSurface == true && m_touchingRoof == false)
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingSurface == true)// && m_touchingRoof == false)
 	{
 		m_velocity.y = JUMP_SPEED;
 		m_touchingSurface = false;
@@ -76,7 +75,8 @@ void Player::Update(sf::Time _frameTime)
 
 		// If the player has pressed this key, it means that they will drop off the roof of they haven't aleady done so. 
 		// This will allow them to jump again.
-		m_touchingRoof = false;
+		//m_touchingRoof = false;
+		m_touchingSurface = false;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 	{
@@ -174,7 +174,7 @@ void Player::Update(sf::Time _frameTime)
 
 	//Apply gravity to our velocity
 	// If we are not touching any surface on the level or (we are not touching the roof while collagen is active)
-	if (m_touchingSurface == false && m_touchingRoof == false)
+	if (m_touchingSurface == false)// && m_touchingRoof == false)
 	{
 			float velocityChange = (GRAVITY * _frameTime.asSeconds()) * 2;
 			m_velocity.y += velocityChange;
@@ -190,7 +190,8 @@ void Player::Update(sf::Time _frameTime)
 		m_touchingSurface = false;
 	if (m_touchingWall == true)
 		m_touchingWall = false;
-
+	if (m_touchingRoof == true)
+		m_touchingRoof = false;
 
 	//If the game has started, down down from 60 seconds
 	if (m_gameStart == true)
@@ -270,6 +271,8 @@ void Player::Collide(GameObject& _collider)
 	rightCollider.left += playerCollider.width - 10;
 	// Set our right side collider width to be 5 pixels
 	rightCollider.width = 5;
+	// Shorten the height as to not mess with the other colliders
+	rightCollider.height -= 10;
 
 	//Create a collider for the right hand side of the player
 	sf::FloatRect leftCollider = playerCollider;
@@ -278,7 +281,7 @@ void Player::Collide(GameObject& _collider)
 	leftCollider.top += 2;
 	// Set our left side collider width to be 5 pixels
 	leftCollider.width = 5;
-	// Needed as the player can drop through the floor otherwise travelling left and down
+	// Need to remove the gap between the player and the wall
 	leftCollider.left += 5;
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -332,14 +335,9 @@ void Player::Collide(GameObject& _collider)
 			// We are now touching the ground!
 			m_touchingSurface = true;
 
-				//Check if we are falling downward
-				if (wereTouchingSurface == false && m_velocity.y > 0)
-				{
 					//We have touched the ground
 					m_velocity.y = 0;
 					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y - m_sprite.getGlobalBounds().height);
-				}
-			
 		}
 
 		// Is the head touching the bottom of the platform?
@@ -351,16 +349,13 @@ void Player::Collide(GameObject& _collider)
 			if (potionState == Collagen)
 			{
 				//The player is no longer able to move up and isn't affected by gravity
-				m_touchingRoof = true;
+				//m_touchingRoof = true;
+				m_touchingSurface = true;
 
-				//Yes it is, sticky movement
-				//Check if we are jumping
-				if (wereTouchingSurface == false && m_velocity.y <= 0)
-				{
+					//Yes it is, sticky movement
 					//We have touched the roof
 					m_velocity.y = 0;
 					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height); //FOR THE WATER INVERT THESE VALUES //
-				}
 			}
 			else
 			{
@@ -386,11 +381,10 @@ void Player::Collide(GameObject& _collider)
 			if (potionState == Collagen)
 			{
 				// Yes it is, sticky movement
-
 				//Reset the player's ability to move up
 				m_touchingSurface = true;
 
-				if (wereTouchingWall == false && m_velocity.x >= 0)
+				//if (wereTouchingWall == false && m_velocity.x >= 0)
 				{
 					m_velocity.x = 0;
 					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
@@ -401,11 +395,9 @@ void Player::Collide(GameObject& _collider)
 				//Do not reset the player's ability to move up
 				m_touchingSurface = false;
 				// No it is not, normal movement
-				if (wereTouchingWall == false && m_velocity.x > 0)
-				{
+
 					m_velocity.x = 0;
 					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
 			}
 		}
 
@@ -420,7 +412,7 @@ void Player::Collide(GameObject& _collider)
 				//Reset the player's ability to move up
 				m_touchingSurface = true;
 				// Yes it is, sticky movement
-				if (wereTouchingWall == false && m_velocity.x <= 0)
+				//if (wereTouchingWall == false && m_velocity.x <= 0)
 				{
 					m_velocity.x = 0;
 					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
@@ -431,11 +423,8 @@ void Player::Collide(GameObject& _collider)
 				//Do not reset the player's ability to move up
 				m_touchingSurface = false;
 				// No it isn't, normal movement
-				if (wereTouchingWall == false && m_velocity.x < 0)
-				{
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
 			}
 		}
 	}

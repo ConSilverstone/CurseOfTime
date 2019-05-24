@@ -129,7 +129,6 @@
     <ClCompile Include="CrackedWall.cpp" />
     <ClCompile Include="Delay.cpp" />
     <ClCompile Include="Diamond.cpp" />
-    <ClCompile Include="Dirt.cpp" />
     <ClCompile Include="Electricity.cpp" />
     <ClCompile Include="Exit.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -157,7 +156,6 @@
     <ClInclude Include="CrackedWall.h" />
     <ClInclude Include="Delay.h" />
     <ClInclude Include="Diamond.h" />
-    <ClInclude Include="Dirt.h" />
     <ClInclude Include="Electricity.h" />
     <ClInclude Include="Exit.h" />
     <ClInclude Include="GameObject.h" />
