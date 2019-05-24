@@ -716,7 +716,7 @@ void Player::Collide(GameObject& _collider)
 
 			if (potionState == Electricity)
 			{
-				// Yes it is, when the player touches a wall, they should pass through it to the other side.
+				// If electricity is active and the player touches water, push them to the right until they no longer are touching water (zap movement)
 
 				if (wereTouchingWall == false && m_velocity.x >= 0)
 				{
@@ -747,6 +747,7 @@ void Player::Collide(GameObject& _collider)
 			{
 				if (wereTouchingWall == false && m_velocity.x <= 0)
 				{
+					// If electricity is active and the player touches water, push them to the left until they no longer are touching water (zap movement)
 					m_velocity.x = 0;
 					m_sprite.setPosition(waterCollider->getPosition().x - waterCollider->GetBounds().width, m_sprite.getPosition().y);
 				}
