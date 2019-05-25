@@ -35,6 +35,12 @@ public:
 private:
 
 	const float m_cellSize;
+	
+	// To draw the camera, we need to know how big the level is.
+	float m_levelSizeX;
+	float m_levelSizeY;
+	float m_levelZoom;
+
 	int m_currentLevel;
 	int m_levelDiamonds;
 	int m_currentScore;

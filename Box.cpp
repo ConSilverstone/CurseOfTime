@@ -5,6 +5,8 @@
 #include "Player.h"
 #include "Diamond.h"
 #include "Wall.h"
+#include "Spike.h"
+#include "CrackedWall.h"
 
 // Constants
 #define GRAVITY 200.0f
@@ -14,6 +16,7 @@ Box::Box()
 	, m_touchingGround(false)
 	, m_touchingWall(false)
 	, m_player(nullptr)
+	, m_AmountMoved(0.0f)
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/box.png"));
 	m_blocksMovement = true;
@@ -29,23 +32,51 @@ void Box::Update(sf::Time _frameTime)
 	{
 		float velocityChange = (GRAVITY * _frameTime.asSeconds()) * 2;
 		m_velocity.y += velocityChange;
+
+		//// Call the update function manually on 
+		//// the parent class to move the box
+		//// because the box only moves when it falls
+		//// we can put it here to lessen game lag
+		GridObject::Update(_frameTime);
+
+		// Track how far the box has fallen
+		m_AmountMoved += m_sprite.getPosition().y - m_previousPosition.y;
 	}
 
-	//Move sprite base on velocity
+	// If the box has fallen, update the move object to so that it understands it no longer in the same grid position.
+	if (m_AmountMoved >= 64)
+	{
+		m_level->MoveObjectTo(this, m_gridPosition + sf::Vector2i(0, 1));
+		m_AmountMoved = 0;
+	}
+
+	//Move sprite based on velocity
 	sf::Vector2f positionChange = m_velocity * _frameTime.asSeconds();
 
 	//Set the box back to not touching ground by default
 	m_touchingGround = false;
 	m_touchingWall = false;
-
-	//// Call the update function manually on 
-	//// the parent class
-	//// This will actually move the character
-	GridObject::Update(_frameTime);
 }
 
 void Box::Collide(GameObject& _collider)
 {
+
+	///////////////////
+	// DYNAMIC CASTS //
+	///////////////////
+	
+	// Dynamic cast the GameObject ref
+	// into a box pointer
+	// if it succeeds, it was a...
+	Wall* wallCollider = dynamic_cast<Wall*>(&_collider);
+	Box* collidedBoxCollider = dynamic_cast<Box*>(&_collider);
+	Spike* spikeCollider = dynamic_cast<Spike*>(&_collider);
+	CrackedWall* crackedWallCollider = dynamic_cast<CrackedWall*>(&_collider);
+
+	////////////////////////
+	// INITIAL BOX /////////
+	////////////////////////
+
 	//Get the collider for the player
 	sf::FloatRect boxCollider = m_sprite.getGlobalBounds();
 
@@ -58,16 +89,21 @@ void Box::Collide(GameObject& _collider)
 		//Set it to the bottom of the platform - 5
 		boxBottom.top += boxCollider.height - 10;
 		boxBottom.height = 10;
+		// Shorten the width to not mess with the other colliders
+		boxBottom.width -= 10;
+		boxBottom.left += 5;
 
 		//Create a collider for the right hand side of the platform
 		sf::FloatRect boxRight = boxCollider;;
-		//Set it to the right of the platform -5
-		boxRight.left += boxRight.width - 5;
+		//Set it to the right of the platform - 10
+		boxRight.left += boxRight.width - 10;
 		// Set our right side collider width to be 5 pixels
 		boxRight.width = 5;
 
 		//Create a collider for the left hand side of the platform
 		sf::FloatRect boxLeft = boxCollider;
+		// Push the box left rect in by 10
+		boxRight.left += 10;
 		// Set our left side collider width to be 5 pixels
 		boxLeft.width = 5;
 
@@ -86,11 +122,6 @@ void Box::Collide(GameObject& _collider)
 
 	// Only do something if the thing
 	// we touched was a wall
-
-	// Dynamic cast the GameObject ref
-	// into a Wall pointer
-	// if it succeeds, it was a wall
-	Wall* wallCollider = dynamic_cast<Wall*>(&_collider);
 
 	// If it was a wall we hit, we need to more ourselves
 	// outside the wall's bounds, aka back where we were
@@ -128,6 +159,9 @@ void Box::Collide(GameObject& _collider)
 			// We are now touching the ground!
 			m_touchingWall = true;
 
+			//If the box is on the wall, don't track its ability to fall as the box is technically always moving downwards.
+			m_AmountMoved = 0;
+
 			//Check if we are falling downward
 			if (wereTouchingSurface == false && m_velocity.y > 0)
 			{
@@ -135,7 +169,6 @@ void Box::Collide(GameObject& _collider)
 				m_velocity.y = 0;
 				m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y - m_sprite.getGlobalBounds().height);
 			}
-
 		}
 
 		// Is the head touching the bottom of the platform?
@@ -180,14 +213,9 @@ void Box::Collide(GameObject& _collider)
 		}
 	}
 
-	//////////////////
-	////// BOXES /////
-	//////////////////
-
-	// Dynamic cast the GameObject ref
-	// into a box pointer
-	// if it succeeds, it was a box
-	Box* collidedBoxCollider = dynamic_cast<Box*>(&_collider);
+	////////////////////////////////
+	////// BOX WE ARE TOUCHING /////
+	////////////////////////////////
 
 	// If it was a box we hit, we need to move ourselves
 	// outside the box's bounds, aka back where we were
@@ -278,9 +306,224 @@ void Box::Collide(GameObject& _collider)
 			}
 		}
 	}
+
+	//////////////////
+	////// SPIKES ////
+	//////////////////
+
+	// If it was a spike we hit, we need to more ourselves
+	// outside the spike's bounds, aka back where we were
+	if (spikeCollider != nullptr)
+	{
+		////Yes the box is touching
+		// Create platform top collider
+		sf::FloatRect spikeTop = spikeCollider->GetBounds();
+		spikeTop.height = 10;
+		// Shorten the width to not mess with the other colliders
+		spikeTop.width -= 10;
+		spikeTop.left += 5;
+
+		// Create platform bottom collider
+		sf::FloatRect spikeBottom = spikeCollider->GetBounds();
+		//Set it to the bottom of the platform - 5
+		spikeBottom.top += spikeCollider->GetBounds().height - 5;
+		spikeBottom.height = 10;
+		// Shorten the width to not mess with the other colliders
+		spikeBottom.width -= 10;
+		spikeBottom.left += 5;
+
+		//Create a collider for the right hand side of the platform
+		sf::FloatRect spikeRight = spikeCollider->GetBounds();
+		//Set it to the right of the platform -5
+		spikeRight.left += spikeRight.width - 5;
+		// Set our right side collider width to be 5 pixels
+		spikeRight.width = 5;
+
+		//Create a collider for the left hand side of the platform
+		sf::FloatRect spikeLeft = spikeCollider->GetBounds();
+		// Set our left side collider width to be 5 pixels
+		spikeLeft.width = 5;
+
+		// Are the feet touching the top of the platform?
+		if (boxBottom.intersects(spikeTop))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+			m_touchingGround = true;
+
+			//Check if we are falling downward
+			if (wereTouchingSurface == false && m_velocity.y > 0)
+			{
+				//We have touched the ground
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, spikeCollider->getPosition().y - m_sprite.getGlobalBounds().height);
+			}
+
+		}
+
+		// Is the head touching the bottom of the platform?
+		if (boxTop.intersects(spikeBottom))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			//Check if we are jumping
+			if (wereTouchingWall == false && m_velocity.y < 0)
+			{
+				//We have touched the roof
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, spikeCollider->getPosition().y + spikeCollider->GetBounds().height);
+			}
+
+		}
+
+		if (boxRight.intersects(spikeLeft))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			if (wereTouchingWall == false && m_velocity.x > 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+			}
+
+		}
+
+		if (boxLeft.intersects(spikeRight))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			if (wereTouchingWall == false && m_velocity.x < 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+			}
+		}
+	}
+
+	//////////////////
+	////// SPIKES ////
+	//////////////////
+
+	// If it was a spike we hit, we need to more ourselves
+	// outside the spike's bounds, aka back where we were
+	if (crackedWallCollider != nullptr)
+	{
+		////Yes the box is touching
+		// Create platform top collider
+		sf::FloatRect crackedTop = crackedWallCollider->GetBounds();
+		crackedTop.height = 10;
+
+		// Create platform bottom collider
+		sf::FloatRect crackedBottom = crackedWallCollider->GetBounds();
+		//Set it to the bottom of the platform - 5
+		crackedBottom.top += crackedWallCollider->GetBounds().height - 5;
+		crackedBottom.height = 10;
+		// Shorten the width to not mess with the other colliders
+		//platformBottom.width -= 10;
+		//platformBottom.left += 5;
+
+		//Create a collider for the right hand side of the platform
+		sf::FloatRect crackedRight = crackedWallCollider->GetBounds();
+		//Set it to the right of the platform -5
+		crackedRight.left += crackedRight.width - 5;
+		// Set our right side collider width to be 5 pixels
+		crackedRight.width = 5;
+
+		//Create a collider for the left hand side of the platform
+		sf::FloatRect crackedLeft = crackedWallCollider->GetBounds();
+		// Set our left side collider width to be 5 pixels
+		crackedLeft.width = 5;
+
+		// Are the feet touching the top of the platform?
+		if (boxBottom.intersects(crackedTop))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			//Check if we are falling downward
+			if (wereTouchingSurface == false && m_velocity.y > 0)
+			{
+				//We have touched the ground
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, crackedWallCollider->getPosition().y - m_sprite.getGlobalBounds().height);
+			}
+
+		}
+
+		// Is the head touching the bottom of the platform?
+		if (boxTop.intersects(crackedBottom))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			//Check if we are jumping
+			if (wereTouchingWall == false && m_velocity.y < 0)
+			{
+				//We have touched the roof
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, crackedWallCollider->getPosition().y + crackedWallCollider->GetBounds().height);
+			}
+
+		}
+
+		if (boxRight.intersects(crackedLeft))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			if (wereTouchingWall == false && m_velocity.x > 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+			}
+
+		}
+
+		if (boxLeft.intersects(crackedRight))
+		{
+			// We are now touching the ground!
+			m_touchingWall = true;
+
+			if (wereTouchingWall == false && m_velocity.x < 0)
+			{
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+			}
+		}
+	}
 }
 
-void Box::BoxSlide(sf::Vector2f _velocity)
+bool Box::AttemptPush(sf::Vector2i _direction)
 {
-	m_velocity = _velocity;
+	// Attempt to move the box in the given direction
+
+	// Get current position
+	// Calculate target position
+	sf::Vector2i targetPos = m_gridPosition + _direction;
+
+	// Check if the space is empty
+
+	// Get list of objects in our target position
+	std::vector<GridObject*> targetCellContents = m_level->GetObjectAt(targetPos);
+
+	// Check if any of those objects block movement
+	GridObject* blocker = nullptr;
+	bool blocked = false;
+	for (int i = 0; i < targetCellContents.size(); ++i)
+	{
+		if (targetCellContents[i]->GetBlocksMovement() == true)
+		{
+			blocker = targetCellContents[i];
+			blocked = true;
+		}
+	}
+
+	// If empty, move there
+	if (blocked == false)
+	{
+		return m_level->MoveObjectTo(this, targetPos);
+	}
 }

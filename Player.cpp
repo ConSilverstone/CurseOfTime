@@ -323,11 +323,17 @@ void Player::Collide(GameObject& _collider)
 		platformRight.left += platformRight.width - 5;
 		// Set our right side collider width to be 5 pixels
 		platformRight.width = 5;
+		// Shorten the height to not mess with the other colliders
+		platformRight.height -= 10;
+		platformRight.top += 5;
 
 		//Create a collider for the left hand side of the platform
 		sf::FloatRect platformLeft = wallCollider->GetBounds();
 		// Set our left side collider width to be 5 pixels
 		platformLeft.width = 5;
+		// Shorten the height to not mess with the other colliders
+		platformLeft.height -= 10;
+		platformLeft.top += 5;
 
 		// Are the feet touching the top of the platform?
 		if (feetCollider.intersects(platformTop))
@@ -436,6 +442,153 @@ void Player::Collide(GameObject& _collider)
 	if (boxCollider != nullptr)
 	{
 		// We did hit a box, now we need to move it based on the velocity of the player!
+
+			// Create platform top collider
+			sf::FloatRect platformTop = boxCollider->GetBounds();
+			platformTop.height = 10;
+
+			// Create platform bottom collider
+			sf::FloatRect platformBottom = boxCollider->GetBounds();
+			//Set it to the bottom of the platform - 5
+			platformBottom.top += boxCollider->GetBounds().height - 5;
+			platformBottom.height = 10;
+			// Shorten the width to not mess with the other colliders
+			platformBottom.width -= 10;
+			platformBottom.left += 5;
+
+			//Create a collider for the right hand side of the platform
+			sf::FloatRect platformRight = boxCollider->GetBounds();
+			//Set it to the right of the platform -5
+			platformRight.left += platformRight.width - 5;
+			// Set our right side collider width to be 5 pixels
+			platformRight.width = 5;
+			// Shorten the height to not mess with the other colliders
+			platformRight.height -= 10;
+			platformRight.top += 5;
+
+			//Create a collider for the left hand side of the platform
+			sf::FloatRect platformLeft = boxCollider->GetBounds();
+			// Set our left side collider width to be 5 pixels
+			platformLeft.width = 5;
+			// Shorten the height to not mess with the other colliders
+			platformLeft.height -= 10;
+			platformLeft.top += 5;
+
+			// Are the feet touching the top of the platform?
+			if (feetCollider.intersects(platformTop))
+			{
+				// We are now touching the ground!
+				m_touchingSurface = true;
+
+				//We have touched the ground
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, boxCollider->getPosition().y - m_sprite.getGlobalBounds().height);
+			}
+
+			// Is the head touching the bottom of the platform?
+			if (headCollider.intersects(platformBottom))
+			{
+				// We are now touching the ground!
+				// Is the player's active element collagen?
+
+				if (potionState == Collagen)
+				{
+					//The player is no longer able to move up and isn't affected by gravity
+					//m_touchingRoof = true;
+					m_touchingSurface = true;
+
+					//Yes it is, sticky movement
+					//We have touched the roof
+					m_velocity.y = 0;
+					m_sprite.setPosition(m_sprite.getPosition().x, boxCollider->getPosition().y + boxCollider->GetBounds().height);
+				}
+				else
+				{
+					//Do not reset the player's ability to move up
+					m_touchingSurface = false;
+					// No it is not, normal movement
+					//Check if we are jumping
+					if (wereTouchingSurface == false && m_velocity.y < 0)
+					{
+						//We have touched the roof
+						m_velocity.y = 0;
+						m_sprite.setPosition(m_sprite.getPosition().x, boxCollider->getPosition().y + boxCollider->GetBounds().height);
+					}
+				}
+			}
+
+			if (rightCollider.intersects(platformLeft))
+			{
+				m_touchingWall = true;
+
+				// The target position we want to move the box towards is to the right 1 cell
+				sf::Vector2i targetPos(1, 0);
+
+				//// Is the player's active element collagen?
+
+				if (potionState == Collagen)
+				{
+					// Attempt to push!
+					bool pushSucceeded = boxCollider->AttemptPush(targetPos);
+
+					// Yes it is, sticky movement
+					//Reset the player's ability to move up
+					m_touchingSurface = true;
+
+					m_velocity.x = 0;
+					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+				}
+				else
+				{
+					// Attempt to push!
+					bool pushSucceeded = boxCollider->AttemptPush(targetPos);
+
+					//Do not reset the player's ability to move up
+					m_touchingSurface = false;
+					// No it is not, normal movement
+
+					m_velocity.x = 0;
+					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+				}
+			}
+
+			if (leftCollider.intersects(platformRight))
+			{
+				m_touchingWall = true;
+
+				// The target position we want to move the box towards is to the left 1 cell
+				sf::Vector2i targetPos(-1, 0);
+
+				// Is the player's active element collagen?
+
+				if (potionState == Collagen)
+				{
+					//Reset the player's ability to move up
+					m_touchingSurface = true;
+
+					// Attempt to push!
+					bool pushSucceeded = boxCollider->AttemptPush(targetPos);
+
+					// Yes it is, sticky movement
+					//if (wereTouchingWall == false && m_velocity.x <= 0)
+					{
+						m_velocity.x = 0;
+						m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+					}
+				}
+				else
+				{
+					//Do not reset the player's ability to move up
+					m_touchingSurface = false;
+
+					// Attempt to push!
+					bool pushSucceeded = boxCollider->AttemptPush(targetPos);
+
+					// No it isn't, normal movement
+					m_velocity.x = 0;
+					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
+				}
+			}
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -467,8 +620,39 @@ void Player::Collide(GameObject& _collider)
 	
 	if (spikeCollider != nullptr)
 	{
-		// We did hit a spike! Kill the player
-		m_level->ReloadLevel();
+		// Create platform top collider
+		sf::FloatRect spikeTipTopOrBottom = spikeCollider->GetBounds();
+		spikeTipTopOrBottom.width = 10;
+
+		//Create a collider for the sides of the spike
+		sf::FloatRect SpikeTipSides = spikeCollider->GetBounds();
+		// Set the rect to the middle of the spikes
+		SpikeTipSides.height = (SpikeTipSides.height / 2) - 10;
+		// Shorten the height for the +
+		SpikeTipSides.height = 10;
+
+
+		// Are the feet touching the top of the platform?
+		if (feetCollider.intersects(spikeTipTopOrBottom))
+		{
+			m_level->ReloadLevel();
+		}
+
+		// Is the head touching the bottom of the platform?
+		if (headCollider.intersects(spikeTipTopOrBottom))
+		{
+			m_level->ReloadLevel();
+		}
+
+		if (rightCollider.intersects(SpikeTipSides))
+		{
+			m_level->ReloadLevel();
+		}
+
+		if (leftCollider.intersects(SpikeTipSides))
+		{
+			m_level->ReloadLevel();
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -616,9 +800,8 @@ void Player::Collide(GameObject& _collider)
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
-	// CRACKED WALL //////////////////////////////////////////////////////////////////////////
+	// WATER /////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////
-	
 	
 	if (waterCollider != nullptr)
 	{
@@ -770,6 +953,11 @@ int Player::GetDelay()
 int Player::GetPotionState()
 {
 	return m_numericalPotionState;
+}
+
+bool Player::GetGameStart()
+{
+	return m_gameStart;
 }
 
 void Player::ChangeTimer(int _changeBy)

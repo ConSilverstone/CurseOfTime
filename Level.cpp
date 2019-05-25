@@ -52,11 +52,19 @@ Level::Level()
 
 void Level::Draw(sf::RenderTarget & _target)
 {
-	// Create and update
+	// Create and update the camera
 	sf::View camera = _target.getDefaultView();
+	camera.setCenter(m_levelSizeX / 2, m_levelSizeY / 2);
 
-	//Adjust camera as needed
-    camera.setCenter(m_player->getPosition());
+	if (m_player->GetGameStart() == true)
+	{
+		//If the game has begun, set the camera to follow the player.
+		camera.setCenter(m_player->getPosition());
+	}
+	else 
+	{
+		camera.zoom(m_levelZoom);
+	}
 
 	// Draw game world to the window
 	_target.setView(camera);
@@ -222,6 +230,10 @@ void Level::Input(sf::Event _gameEvent)
 void Level::LoadLevel(int _levelToLoad)
 {
 	// Clean up the old level
+	// Reset the X and Y setters for the camera
+	m_levelSizeX = 0;
+	m_levelSizeY = 0;
+	m_levelZoom = 1;
 
 	// Delete any data already in the level
 	// rows
@@ -282,10 +294,14 @@ void Level::LoadLevel(int _levelToLoad)
 		Player* player = new Player();
 		m_player = player;
 
-		// Create lists of all object being created by loading the level
+		// Create lists of all objects being created by loading the level (for multi object collision)
 		std::vector<GameObject*> walls;
 		std::vector<GameObject*> boxes;
-		
+		std::vector<GameObject*> crackedWalls;
+		std::vector<GameObject*> spikes;
+
+		// Since we only want the camera's m_levelSizeX tracker to work for the first row, we need to prevent it from running on subsequent rows
+		bool reachedSecondRow = false;
 
 		// Read each character one by one from the file...
 		char ch;
@@ -296,7 +312,6 @@ void Level::LoadLevel(int _levelToLoad)
 		while (inFile >> std::noskipws >> ch)
 		{
 			// Perform actions based on what character was read in
-
 			if (ch == ' ')
 			{
 				++x;
@@ -305,6 +320,11 @@ void Level::LoadLevel(int _levelToLoad)
 			{
 				++y;
 				x = 0;
+
+				//Everytime we take a new line, change where the camera centres on and the depth of the zoom
+				m_levelSizeY += m_cellSize;
+				m_levelZoom += 0.07f;
+				reachedSecondRow = true;
 
 				// Create a new row in our grid
 				m_background.push_back(std::vector<sf::Sprite>());
@@ -316,6 +336,11 @@ void Level::LoadLevel(int _levelToLoad)
 				// Create Background Sprite
 				m_background[y].push_back(sf::Sprite(AssetManager::GetTexture("graphics/ground.png")));
 				m_background[y][x].setPosition(x*m_cellSize, y*m_cellSize);
+
+				if (reachedSecondRow == false) 
+				{
+					m_levelSizeX += m_cellSize;
+				}
 
 				// Create an empty vector for our grid contents in this cell
 				m_contents[y].push_back(std::vector<GridObject*>());
@@ -372,6 +397,7 @@ void Level::LoadLevel(int _levelToLoad)
 					spike->SetGridPosition(x, y);
 					m_contents[y][x].push_back(spike);
 					m_collisionList.push_back(std::make_pair(player, spike));
+					spikes.push_back(spike);
 				}
 				else if (ch == 'K')
 				{
@@ -404,6 +430,7 @@ void Level::LoadLevel(int _levelToLoad)
 					crackedwall->SetGridPosition(x, y);
 					m_contents[y][x].push_back(crackedwall);
 					m_collisionList.push_back(std::make_pair(player, crackedwall));
+					crackedWalls.push_back(crackedwall);
 				}
 				else
 				{
@@ -441,6 +468,38 @@ void Level::LoadLevel(int _levelToLoad)
 
 				// Create a pairing between the two.
 				m_collisionList.push_back(std::make_pair(thisBoxSet1, thisBoxSet2));
+			}
+		}
+
+		// This is the code that allows collision between boxes and spikes
+		for (int i = 0; i < boxes.size(); ++i)
+		{
+			// Each each box in this array...
+			GameObject* thisParticularBox = boxes[i];
+
+			for (int j = 0; j < spikes.size(); ++j)
+			{
+				// ...and each box in the same array...
+				GameObject* thisParticularSpike = spikes[j];
+
+				// Create a pairing between the two.
+				m_collisionList.push_back(std::make_pair(thisParticularBox, thisParticularSpike));
+			}
+		}
+
+		// This is the code that allows collision between boxes and cracked walls
+		for (int i = 0; i < boxes.size(); ++i)
+		{
+			// Each each box in this array...
+			GameObject* thisParticularBox = boxes[i];
+
+			for (int j = 0; j < crackedWalls.size(); ++j)
+			{
+				// ...and each box in the same array...
+				GameObject* thisParticularCrackedWall = crackedWalls[j];
+
+				// Create a pairing between the two.
+				m_collisionList.push_back(std::make_pair(thisParticularBox, thisParticularCrackedWall));
 			}
 		}
 

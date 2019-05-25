@@ -43,6 +43,7 @@ public:
 	int GetTimer();
 	int GetDelay();
 	int GetPotionState();
+	bool GetGameStart();
 	void ChangeTimer(int _changeBy);
 	void ChangeDelay(int _changeBy);
 
