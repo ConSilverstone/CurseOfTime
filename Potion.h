@@ -35,4 +35,8 @@ private:
 	// Class References
 	Player* m_player;
 
+	//State
+	bool m_touchingSurface;
+	bool m_touchingWall;
+
 };
