@@ -23,6 +23,7 @@ private:
 	//State
 	bool m_touchingGround;
 	bool m_touchingWall;
+	bool m_isPushed; // We only want the box to run collision code and gravity if it has been pushed, to prevent lag//
 
 	//Data
 	float m_AmountMoved;

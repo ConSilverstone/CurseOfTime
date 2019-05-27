@@ -50,6 +50,8 @@ Player::Player()
 	, m_WaterWalk()
 	, m_soundDelay(0.2f)
 	, m_gameSoundStarted(false)
+	, m_hasTouchedWaterRight(false)
+	, m_hasTouchedWaterLeft(false)
 	, m_isPlayerFacingRight(true)
 	, m_isPlayerThrowingDown(false)
 {
@@ -445,23 +447,50 @@ void Player::Collide(GameObject& _collider)
 		platformBottom.width -= 10;
 		platformBottom.left += 5;
 
-		//Create a collider for the right hand side of the platform
-		sf::FloatRect platformRight = wallCollider->GetBounds();
+		//Create a collider for the right hand side of the wall
+		sf::FloatRect wallRight = wallCollider->GetBounds();
 		//Set it to the right of the platform -5
-		platformRight.left += platformRight.width - 5;
+		wallRight.left += wallRight.width - 5;
 		// Set our right side collider width to be 5 pixels
-		platformRight.width = 5;
+		wallRight.width = 5;
 		// Shorten the height to not mess with the other colliders
-		platformRight.height -= 10;
-		platformRight.top += 5;
+		wallRight.height -= 10;
+		wallRight.top += 5;
 
 		//Create a collider for the left hand side of the platform
-		sf::FloatRect platformLeft = wallCollider->GetBounds();
+		sf::FloatRect wallLeft = wallCollider->GetBounds();
 		// Set our left side collider width to be 5 pixels
-		platformLeft.width = 5;
+		wallLeft.width = 5;
 		// Shorten the height to not mess with the other colliders
-		platformLeft.height -= 10;
-		platformLeft.top += 5;
+		wallLeft.height -= 10;
+		wallLeft.top += 5;
+
+		if (m_hasTouchedWaterLeft == true)
+		{
+			//Create a collider for the wall.
+			sf::FloatRect wallElectricKnockback = wallCollider->GetBounds();
+
+			if (leftCollider.intersects(wallElectricKnockback))
+			{
+				// The player has merged with the right side of a wall, send them forward 2 cells
+				m_sprite.setPosition(wallCollider->getPosition().x - wallCollider->GetBounds().width * 2, m_sprite.getPosition().y);
+				m_hasTouchedWaterLeft = false;
+			}
+		}
+
+		// If when the player jumps using electricity, we should check if they would be in a wall.
+		if (m_hasTouchedWaterRight == true)
+		{
+			//Create a collider for the wall.
+			sf::FloatRect wallElectricKnockback = wallCollider->GetBounds();
+
+			if (rightCollider.intersects(wallElectricKnockback))
+			{
+				// The player has merged with the left side of a wall, send them back 2 cells
+				m_sprite.setPosition(wallCollider->getPosition().x + wallCollider->GetBounds().width * 2, m_sprite.getPosition().y);
+				m_hasTouchedWaterRight = false;
+			}
+		}
 
 		// Are the feet touching the top of the platform?
 		if (feetCollider.intersects(platformTop))
@@ -469,9 +498,13 @@ void Player::Collide(GameObject& _collider)
 			// We are now touching the ground!
 			m_touchingSurface = true;
 
-					//We have touched the ground
-					m_velocity.y = 0;
-					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y - m_sprite.getGlobalBounds().height);
+			//We have touched the ground
+			m_velocity.y = 0;
+			m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y - m_sprite.getGlobalBounds().height);
+
+			// If the game hasn't sent the player back from being inside a wall, then we no longer need to check if they have touched water
+			m_hasTouchedWaterLeft = false;
+			m_hasTouchedWaterRight = false;
 		}
 
 		// Is the head touching the bottom of the platform?
@@ -485,10 +518,10 @@ void Player::Collide(GameObject& _collider)
 				//The player is no longer able to move up and isn't affected by gravity
 				m_touchingSurface = true;
 
-					//Yes it is, sticky movement
-					//We have touched the roof
-					m_velocity.y = 0;
-					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height); //FOR THE WATER INVERT THESE VALUES //
+				//Yes it is, sticky movement
+				//We have touched the roof
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height); //FOR THE WATER INVERT THESE VALUES //
 			}
 			else
 			{
@@ -505,7 +538,7 @@ void Player::Collide(GameObject& _collider)
 			}
 		}
 
-		if (rightCollider.intersects(platformLeft))
+		if (rightCollider.intersects(wallLeft))
 		{
 			m_touchingWall = true;
 
@@ -534,7 +567,7 @@ void Player::Collide(GameObject& _collider)
 			}
 		}
 
-		if (leftCollider.intersects(platformRight))
+		if (leftCollider.intersects(wallRight))
 		{
 			m_touchingWall = true;
 			
@@ -881,11 +914,15 @@ void Player::Collide(GameObject& _collider)
 			{
 				// If electricity is active and the player touches water, push them to the right until they no longer are touching water (zap movement)
 
-				if (wereTouchingWall == false && m_velocity.x >= 0)
+				m_WaterWalk.play();
+				m_velocity.x = 0;
+				m_sprite.setPosition(waterCollider->getPosition().x + waterCollider->GetBounds().width, m_sprite.getPosition().y);
+
+				// To prevent the player from flickering between which side they have touched, just check that the opposite is not true.
+				if (m_hasTouchedWaterRight == false)
 				{
-					m_WaterWalk.play();
-					m_velocity.x = 0;
-					m_sprite.setPosition(waterCollider->getPosition().x + waterCollider->GetBounds().width, m_sprite.getPosition().y);
+					m_hasTouchedWaterLeft = true;
+					m_hasTouchedWaterRight = false;
 				}
 			}
 			else
@@ -909,13 +946,17 @@ void Player::Collide(GameObject& _collider)
 
 			if (potionState == Electricity)
 			{
-				if (wereTouchingWall == false && m_velocity.x <= 0)
-				{
 					m_WaterWalk.play();
 					// If electricity is active and the player touches water, push them to the left until they no longer are touching water (zap movement)
 					m_velocity.x = 0;
-					m_sprite.setPosition(waterCollider->getPosition().x - waterCollider->GetBounds().width, m_sprite.getPosition().y);
-				}
+					m_sprite.setPosition(waterCollider->getPosition().x - waterCollider->GetBounds().width + 30, m_sprite.getPosition().y);
+
+					// To prevent the player from flickering between which side they have touched, just check that the opposite is not true.
+					if (m_hasTouchedWaterLeft == false)
+					{
+						m_hasTouchedWaterRight = true;
+						m_hasTouchedWaterLeft = false;
+					}
 			}
 			else
 			{

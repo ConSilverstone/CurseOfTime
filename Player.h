@@ -69,6 +69,8 @@ private:
 	bool m_keyBeenPressed; // Has a element key been pressed so stop flickering between on and off //
 	bool m_potionBeenThrown; // Has a potion been thrown to stop the play from spamming them //
 	bool m_gameSoundStarted; // Is the sound started so that we can add a delay to stop spam playing //
+	bool m_hasTouchedWaterRight; // We need to know if the player has touched water for the purpose of bouncing them back if they land inside a wall //
+	bool m_hasTouchedWaterLeft;
 
 	bool m_isPlayerFacingRight; // Is the player facing the right or left to know which way we want to throw a potion //
 	bool m_isPlayerThrowingDown; // Is the player attempting to throw the potion straight down? //
