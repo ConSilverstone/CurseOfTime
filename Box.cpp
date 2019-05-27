@@ -17,9 +17,15 @@ Box::Box()
 	, m_touchingWall(false)
 	, m_player(nullptr)
 	, m_AmountMoved(0.0f)
+	, m_boxPush()
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/box.png"));
 	m_blocksMovement = true;
+
+	////////////////
+	/// SOUNDS /////
+	////////////////
+	m_boxPush.setBuffer(AssetManager::GetSoundBuffer("audio/BoxPush.wav"));
 }
 
 void Box::Update(sf::Time _frameTime)
@@ -252,6 +258,9 @@ void Box::Collide(GameObject& _collider)
 			// We are now touching the ground!
 			m_touchingWall = true;
 
+			//If the box is on a box, don't track its ability to fall as the box is technically always moving downwards.
+			m_AmountMoved = 0;
+
 			//Check if we are falling downward
 			if (wereTouchingSurface == false && m_velocity.y > 0)
 			{
@@ -351,6 +360,9 @@ void Box::Collide(GameObject& _collider)
 			m_touchingWall = true;
 			m_touchingGround = true;
 
+			//If the box is on a spike, don't track its ability to fall as the box is technically always moving downwards.
+			m_AmountMoved = 0;
+
 			//Check if we are falling downward
 			if (wereTouchingSurface == false && m_velocity.y > 0)
 			{
@@ -443,6 +455,9 @@ void Box::Collide(GameObject& _collider)
 			// We are now touching the ground!
 			m_touchingWall = true;
 
+			//If the box is on a cracked wall, don't track its ability to fall as the box is technically always moving downwards.
+			m_AmountMoved = 0;
+
 			//Check if we are falling downward
 			if (wereTouchingSurface == false && m_velocity.y > 0)
 			{
@@ -524,6 +539,7 @@ bool Box::AttemptPush(sf::Vector2i _direction)
 	// If empty, move there
 	if (blocked == false)
 	{
+		m_boxPush.play();
 		return m_level->MoveObjectTo(this, targetPos);
 	}
 }

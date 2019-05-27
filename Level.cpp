@@ -26,6 +26,7 @@
 // Library Includes
 #include <iostream>
 #include <fstream>
+#include <SFML/Audio.hpp>
 
 Level::Level()
 	: m_cellSize(64.0f)
@@ -39,19 +40,30 @@ Level::Level()
 	, m_pendingReload(false)
 	, m_velocity(0.0f, 0.0f)
 	, m_hasGravity(false)
+	, m_hasPlayed(false)
 	, m_touchingGround(false)
 	, m_player(nullptr)
 	, m_potion(nullptr)
+	, m_cracked(nullptr)
 	, m_wall(nullptr)
 	, m_timer(nullptr)
 	, m_delay(nullptr)
 	, m_collisionList()
 {
 	LoadLevel(1);
+
+	/////////////////
+	/// MUSIC ///////
+	/////////////////
+	LevelViewTheme.openFromFile("audio/05ComeandFindMe.ogg");
+	LevelPlayTheme.openFromFile("audio/Jumpshot.ogg");
+	FinalLevelViewTheme.openFromFile("audio/09ComeandFindMe-Bmix.ogg");
+	FinalLevelPlayTheme.openFromFile("audio/07We'retheResistors.ogg");
 }
 
 void Level::Draw(sf::RenderTarget & _target)
 {
+
 	// Create and update the camera
 	sf::View camera = _target.getDefaultView();
 	camera.setCenter(m_levelSizeX / 2, m_levelSizeY / 2);
@@ -111,6 +123,64 @@ void Level::Draw(sf::RenderTarget & _target)
 
 void Level::Update(sf::Time _frameTime)
 {
+	/////////////////
+	/// MUSIC ///////
+	/////////////////
+
+	// Set up the play conditions of the music
+	if (m_player->GetGameStart() == false && m_currentLevel <= 4)
+	{
+		if (LevelViewTheme.Playing)
+		{
+			//Do nothing
+		}
+		else
+		{
+			LevelPlayTheme.stop();
+			LevelViewTheme.play();
+			LevelViewTheme.setLoop(true);
+		}
+	} else if (m_player->GetGameStart() == true && m_currentLevel <= 4)
+	{
+		if (LevelPlayTheme.Playing)
+		{
+			//Do nothing
+		}
+		else
+		{
+			LevelViewTheme.stop();
+			LevelPlayTheme.play();
+			LevelPlayTheme.setLoop(true);
+		}
+	}
+	else if (m_player->GetGameStart() == false && m_currentLevel >= 5)
+	{
+		if (FinalLevelViewTheme.Playing)
+		{
+			//Do nothing
+		}
+		else
+		{
+			LevelPlayTheme.stop();
+			FinalLevelPlayTheme.stop();
+			FinalLevelViewTheme.play();
+			FinalLevelViewTheme.setLoop(true);
+		}
+	} else if (m_player->GetGameStart() == true && m_currentLevel >= 5)
+	{
+		if (FinalLevelPlayTheme.Playing)
+		{
+			//Do nothing
+		}
+		else
+		{
+			LevelViewTheme.stop();
+			FinalLevelViewTheme.stop();
+			FinalLevelPlayTheme.play();
+			FinalLevelPlayTheme.setLoop(true);
+		}
+	}
+
 	// rows
 	for (int y = 0; y < m_contents.size(); ++y)
 	{
@@ -517,18 +587,22 @@ void Level::LoadLevel(int _levelToLoad)
 		Collagen* collagen = new Collagen();
 		collagen->SetPlayer(player);
 		m_drawListUI.push_back(collagen);
+		m_updateList.push_back(collagen);
 
 		Hydrogen* hydrogen = new Hydrogen();
 		hydrogen->SetPlayer(player);
 		m_drawListUI.push_back(hydrogen);
+		m_updateList.push_back(hydrogen);
 
 		Sulphur* sulphur = new Sulphur();
 		sulphur->SetPlayer(player);
 		m_drawListUI.push_back(sulphur);
+		m_updateList.push_back(sulphur);
 
 		Electricity* electricity = new Electricity();
 		electricity->SetPlayer(player);
 		m_drawListUI.push_back(electricity);
+		m_updateList.push_back(electricity);
 
 		// Close the file now that we are done with it
 		inFile.close();
@@ -537,11 +611,13 @@ void Level::LoadLevel(int _levelToLoad)
 void Level::ReloadLevel()
 {
 	LoadLevel(m_currentLevel);
+	m_hasPlayed = false;
 }
 
 void Level::LoadNextLevel()
 {
 		m_pendingLoad = m_currentLevel + 1;
+		m_hasPlayed = false;
 }
 
 void Level::CreatePotion()
@@ -577,6 +653,12 @@ void Level::CreatePotion()
 			}
 		}
 	}
+}
+
+bool Level::SetHasPlayed(bool _hasPlayed)
+{
+	m_hasPlayed = _hasPlayed;
+	return m_hasPlayed;
 }
 
 float Level::GetCellSize()
@@ -624,46 +706,67 @@ bool Level::MoveObjectTo(GridObject * _toMove, sf::Vector2i _targetPos)
 	return false;
 }
 
-bool Level::deleteObjectAt(GridObject * _toDelete)
+void Level::deletePotionAt(GridObject * _toDelete)
+{
+	if (_toDelete != nullptr)
+	{
+		if (m_potion != nullptr)
+		{
+			delete _toDelete;
+			m_potion = nullptr;
+		}
+		//Find the object in the list using an iterator and the find method
+		for (auto it = m_collisionList.begin(); it != m_collisionList.end(); )
+		{
+			// if second thing in pair is the "to be deleted" object, then, delete the pair
+			if (it->first == _toDelete)
+			{
+				it = m_collisionList.erase(it); // returns pointer to next thing in list, so we don't want to add to it ourselves
+			}
+			else
+				++it; // we didnt delete so add to it to go to the next thing in list
+		}
+	}
+}
+
+void Level::deleteObjectAt(GridObject * _toDelete)
 {
 	if (_toDelete != nullptr)
 	{
 		// Get the current position of the grid object
 		sf::Vector2i oldPos = _toDelete->GetGridPosition();
 
+		// If we found the object at this location,
+		// it will NOT equal the end of the vector
+
 		// Find the object in the list using an iterator
 		// and find the method
 		// Only run this if we know we aren't looking for a potion.
-		if (m_potion = nullptr)
-		{
-			auto it = std::find(m_contents[oldPos.y][oldPos.x].begin(),
-				m_contents[oldPos.y][oldPos.x].end(),
-				_toDelete);
-		}
+		auto it = std::find(m_contents[oldPos.y][oldPos.x].begin(),
+			m_contents[oldPos.y][oldPos.x].end(),
+			_toDelete);
 
 		// If we found the object at this location,
 		// it will NOT equal the end of the vector
-		
+		if (it != m_contents[oldPos.y][oldPos.x].end())
+		{
+			// We found the object!
+			delete *it;
+
+			// Remove it from the old position
+			m_contents[oldPos.y][oldPos.x].erase(it);
+		}
 
 		//Find the object in the list using an iterator and the find method
 		for (auto it = m_collisionList.begin(); it != m_collisionList.end(); )
 		{
 			// if second thing in pair is the "to be deleted" object, then, delete the pair
-			if (it->first == _toDelete)
+			if (it->second == _toDelete)
 				it = m_collisionList.erase(it); // returns pointer to next thing in list, so we don't want to add to it ourselves
 			else
 				++it; // we didnt delete so add to it to go to the next thing in list
 		}
-
-		if (m_potion != nullptr)
-		{
-			delete _toDelete;
-			m_potion = nullptr;
-		}
 	}
-
-	// return failure
-	return false;
 }
 
 std::vector<GridObject*> Level::GetObjectAt(sf::Vector2i _targetPos)

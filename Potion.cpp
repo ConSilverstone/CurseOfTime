@@ -15,9 +15,11 @@ Potion::Potion()
 	, m_player(nullptr)
 	, m_touchingSurface(false)
 	, m_touchingWall(false)
+	, m_Explosion()
 {
 	PotionEffects(none);
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/PotionVial.png"));
+	m_Explosion.setBuffer(AssetManager::GetSoundBuffer("audio/Explosion.wav"));
 	m_sprite.setPosition(0, 0);
 	m_blocksMovement = true;
 }
@@ -28,8 +30,19 @@ void Potion::Update(sf::Time _frameTime)
 	{
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
-			m_velocity.x = xVelocity;
-			m_velocity.y = yVelocity;
+			// What way is the player facing?
+			if (m_player->GetPlayerDirectionRight() == true)
+			{
+				// He is facing to the right so throw the potion to the right.
+				m_velocity.x = xVelocity;
+				m_velocity.y = yVelocity;
+			}
+			if (m_player->GetPlayerDirectionRight() == false)
+			{
+				// He is facing to the left so throw the potion to the left.
+				m_velocity.x = -xVelocity;
+				m_velocity.y = yVelocity;
+			}
 		}
 	}
 		
@@ -67,153 +80,28 @@ void Potion::Collide(GameObject & _collider)
 	CrackedWall* crackedCollider = dynamic_cast<CrackedWall*>(&_collider);
 
 	//////////////////////////////////////////////////////////////////////////////////////////
-	// PLAYER ////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////////////////
-
-	//Get the collider for the player
-	sf::FloatRect potionCollider = m_sprite.getGlobalBounds();
-
-	// Create feet collider
-	sf::FloatRect potionBottomCollider = potionCollider;
-	// Set our feet top to be 10 pixels from the bottom of the player collider
-	potionBottomCollider.top += potionCollider.height - 2.5f;
-	// Set our feet collider height to be 5 pixels
-	potionBottomCollider.height = 2.5f;
-	// Shorten the width to not mess with the other colliders
-	potionBottomCollider.width -= 5;
-	potionBottomCollider.left += 2.5f;
-
-	// Create head collider
-	sf::FloatRect potionTopCollider = potionCollider;
-	// Set our head top to be 5 pixels from the top of the player collider
-	potionTopCollider.top += 2.5f;
-	// Set our head collider height to be 5 pixels
-	potionTopCollider.height = 2.5f;
-	// Shorten the width to not mess with the other colliders
-	potionTopCollider.width -= 5;
-	potionTopCollider.left += 2.5f;
-
-	//Create a collider for the right hand side of the player
-	sf::FloatRect potionRightCollider = potionCollider;
-	//Set it to the right of the player - 10
-	potionRightCollider.left += potionCollider.width - 5;
-	// Set our right side collider width to be 5 pixels
-	potionRightCollider.width = 2.5f;
-
-	//Create a collider for the right hand side of the player
-	sf::FloatRect potionLeftCollider = potionCollider;
-	// Set our head collider height to be 5 pixels
-	potionLeftCollider.height -= 2;
-	potionLeftCollider.top += 1;
-	// Set our left side collider width to be 5 pixels
-	potionLeftCollider.width = 2.5f;
-	// Needed as the player can drop through the floor otherwise travelling left and down
-	potionLeftCollider.left += 2.5f;
-
-	//////////////////////////////////////////////////////////////////////////////////////////
 	// WALLS /////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////
-
-	//Record whether we used to be touching the ground
-	bool wereTouchingSurface = m_touchingSurface;
-	//Assume we did not collide
-	m_touchingSurface = false;
-	//Record whether we used to be touching a wall
-	bool wereTouchingWall = m_touchingWall;
-	//Assume we did not collide
-	m_touchingWall = false;
 
 	// If it was a wall we hit, we need to more ourselves
 	// outside the wall's bounds, aka back where we were
 	if (wallCollider != nullptr)
 	{
+		m_Explosion.play();
+		m_level->deletePotionAt(this);
+	}
 
-		m_level->deleteObjectAt(this);
-		// Create platform top collider
-		sf::FloatRect platformTop = wallCollider->GetBounds();
-		platformTop.height = 10;
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// CRACKED WALLS /////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////
 
-		// Create platform bottom collider
-		sf::FloatRect platformBottom = wallCollider->GetBounds();
-		//Set it to the bottom of the platform - 5
-		platformBottom.top += wallCollider->GetBounds().height - 5;
-		platformBottom.height = 10;
-		// Shorten the width to not mess with the other colliders
-		platformBottom.width -= 10;
-		platformBottom.left += 5;
-
-		//Create a collider for the right hand side of the platform
-		sf::FloatRect platformRight = wallCollider->GetBounds();
-		//Set it to the right of the platform -5
-		platformRight.left += platformRight.width - 5;
-		// Set our right side collider width to be 5 pixels
-		platformRight.width = 5;
-
-		//Create a collider for the left hand side of the platform
-		sf::FloatRect platformLeft = wallCollider->GetBounds();
-		// Set our left side collider width to be 5 pixels
-		platformLeft.width = 5;
-
-		// Are the feet touching the top of the platform?
-		if (potionBottomCollider.intersects(platformTop))
-		{
-			// We are now touching the ground!
-			m_touchingSurface = true;
-
-			//Check if we are falling downward
-			if (wereTouchingSurface == false && m_velocity.y > 0)
-			{
-				//We have touched the ground
-				m_velocity.y = 0;
-				m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y - m_sprite.getGlobalBounds().height);
-			}
-
-		}
-
-		// Is the head touching the bottom of the platform?
-		if (potionTopCollider.intersects(platformBottom))
-		{
-			// We are now touching the roof!
-
-				//Do not reset the player's ability to move up
-				m_touchingSurface = false;
-				// No it is not, normal movement
-				//Check if we are jumping
-				if (wereTouchingSurface == false && m_velocity.y < 0)
-				{
-					//We have touched the roof
-					m_velocity.y = 0;
-					m_sprite.setPosition(m_sprite.getPosition().x, wallCollider->getPosition().y + wallCollider->GetBounds().height);
-				}
-		}
-
-		if (potionRightCollider.intersects(platformLeft))
-		{
-			m_touchingWall = true;
-
-				//Do not reset the player's ability to move up
-				m_touchingSurface = false;
-				// No it is not, normal movement
-				if (wereTouchingWall == false && m_velocity.x > 0)
-				{
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
-			
-		}
-
-		if (potionLeftCollider.intersects(platformRight))
-		{
-			m_touchingWall = true;
-
-				// No it isn't, normal movement
-				if (wereTouchingWall == false && m_velocity.x < 0)
-				{
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
-			
-		}
+	// If it was a wall we hit, we need to more ourselves
+	// outside the wall's bounds, aka back where we were
+	if (crackedCollider != nullptr)
+	{
+		m_Explosion.play();
+		m_level->deleteObjectAt(crackedCollider);
+		m_level->deletePotionAt(this);
 	}
 }
 

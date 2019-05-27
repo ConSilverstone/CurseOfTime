@@ -32,17 +32,34 @@ Player::Player()
 	, m_touchingRoof(false)
 	, m_keyBeenPressed(false)
 	, m_timerCountdown(60.00f)
-	, m_keyDelay (3.00f)
+	, m_keyDelay(3.00f)
 	, m_numericalPotionState(0)
 	, m_gameStart(false)
 	, m_potion(nullptr)
 	, potionState(none)
 	, previousPotionState(none)
+	, m_ElementSelect()
+	, m_Jump()
+	, m_Landing()
+	, m_OutOfTime()
+	, m_Walking()
+	, m_WaterWalk()
+	, m_soundDelay(0.2f)
+	, m_walkingSoundStarted(false)
+	, m_isPlayerFacingRight(true)
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
-	m_playerMoveSound.setBuffer(AssetManager::GetSoundBuffer("audio/footstep1.ogg"));
-	m_playerBumpingSound.setBuffer(AssetManager::GetSoundBuffer("audio/bump.wav"));
 	m_blocksMovement = true;
+
+	////////////////
+	/// SOUNDS /////
+	////////////////
+	m_ElementSelect.setBuffer(AssetManager::GetSoundBuffer("audio/ElementSelect.wav"));
+	m_Jump.setBuffer(AssetManager::GetSoundBuffer("audio/Jump.wav"));
+	m_Landing.setBuffer(AssetManager::GetSoundBuffer("audio/Land.wav"));
+	m_OutOfTime.setBuffer(AssetManager::GetSoundBuffer("audio/OutofTime.wav"));
+	m_Walking.setBuffer(AssetManager::GetSoundBuffer("audio/Walking.wav"));
+	m_WaterWalk.setBuffer(AssetManager::GetSoundBuffer("audio/WaterWalk.wav"));
 }
 
 void Player::Update(sf::Time _frameTime)
@@ -58,15 +75,27 @@ void Player::Update(sf::Time _frameTime)
 	// which keys are currently held down
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingSurface == true)// && m_touchingRoof == false)
 	{
+		m_Jump.play();
 		m_velocity.y = JUMP_SPEED;
 		m_touchingSurface = false;
 		m_gameStart = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 	{
+		if (m_soundDelay <= 0 && m_touchingSurface == true)
+		{
+			m_Walking.play();
+			m_soundDelay = 0.2f;
+		}
+
 		m_velocity.x = -SPEED;
 		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
+		// The game has now begun
 		m_gameStart = true;
+		// Start the countdown to the next instance the player walking sound sound be played
+		m_walkingSoundStarted = true;
+		// The player is not facing right for the purpose of throwning a potion
+		m_isPlayerFacingRight = false;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && m_touchingSurface == false)
 	{
@@ -80,9 +109,20 @@ void Player::Update(sf::Time _frameTime)
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 	{
+		if (m_soundDelay <= 0 && m_touchingSurface == true)
+		{
+			m_Walking.play();
+			m_soundDelay = 0.2f;
+		}
+
 		m_velocity.x = SPEED;
 		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandRight.png"));
+		// The game has now begun
 		m_gameStart = true;
+		// Start the countdown to the next instance the player walking sound sound be played
+		m_walkingSoundStarted = true;
+		// The player is facing right for the purpose of throwning a potion
+		m_isPlayerFacingRight = true;
 	}
 
 	/////////////
@@ -95,12 +135,15 @@ void Player::Update(sf::Time _frameTime)
 		// The player has pressed the 1 key, first we need to check if this element is already active.
 		if (potionState == Collagen && m_keyBeenPressed == false)
 		{
+			m_ElementSelect.play();
 			// It is active, meaning that the player wishes to deactivate this element
 			potionState = none;
+			m_numericalPotionState = 0;
 			m_keyBeenPressed = true;
 		} 
 		else if (potionState != Collagen && m_keyBeenPressed == false)
 		{
+			m_ElementSelect.play();
 			// It is not active, meaning that the player wishes to activate this element
 			potionState = Collagen;
 			m_numericalPotionState = 1;
@@ -113,12 +156,15 @@ void Player::Update(sf::Time _frameTime)
 		// The player has pressed the 1 key, first we need to check if this element is already active.
 		if (potionState == Electricity && m_keyBeenPressed == false)
 		{
+			m_ElementSelect.play();
 			// It is active, meaning that the player wishes to deactivate this element
 			potionState = none;
+			m_numericalPotionState = 0;
 			m_keyBeenPressed = true;
 		}
 		 else if (potionState != Electricity && m_keyBeenPressed == false)
 		{
+			m_ElementSelect.play();
 			// It is not active, meaning that the player wishes to activate this element
 			potionState = Electricity;
 			m_numericalPotionState = 2;
@@ -130,12 +176,15 @@ void Player::Update(sf::Time _frameTime)
 		// The player has pressed the 1 key, first we need to check if this element is already active.
 		if (potionState == Sulphur && m_keyBeenPressed == false)
 		{
+			m_ElementSelect.play();
 			// It is active, meaning that the player wishes to deactivate this element
 			potionState = none;
+			m_numericalPotionState = 0;
 			m_keyBeenPressed = true;
 		}
 		else if (potionState != Sulphur && m_keyBeenPressed == false)
 		{
+			m_ElementSelect.play();
 			// It is not active, meaning that the player wishes to activate this element
 			potionState = Sulphur;
 			m_numericalPotionState = 3;
@@ -147,12 +196,15 @@ void Player::Update(sf::Time _frameTime)
 		// The player has pressed the 4 key, first we need to check if this element is already active.
 		if (potionState == Hydrogen && m_keyBeenPressed == false)
 		{
+			m_ElementSelect.play();
 			// It is active, meaning that the player wishes to deactivate this element
 			potionState = none;
+			m_numericalPotionState = 0;
 			m_keyBeenPressed = true;
 		}
 		else if (potionState != Hydrogen && m_keyBeenPressed == false)
 		{
+			m_ElementSelect.play();
 			// It is not active, meaning that the player wishes to activate this element
 			potionState = Hydrogen;
 			m_numericalPotionState = 4;
@@ -174,7 +226,7 @@ void Player::Update(sf::Time _frameTime)
 
 	//Apply gravity to our velocity
 	// If we are not touching any surface on the level or (we are not touching the roof while collagen is active)
-	if (m_touchingSurface == false)// && m_touchingRoof == false)
+	if (m_touchingSurface == false && m_gameStart == true)
 	{
 			float velocityChange = (GRAVITY * _frameTime.asSeconds()) * 2;
 			m_velocity.y += velocityChange;
@@ -203,9 +255,15 @@ void Player::Update(sf::Time _frameTime)
 	{
 		m_keyDelay -= _frameTime.asSeconds();
 	}
+	// If the walking sound started, count down to the next interval when the walking sound would be played
+	if (m_walkingSoundStarted == true)
+	{
+		m_soundDelay -= _frameTime.asSeconds();
+	}
 	//If the count down reaches 0, everything is reset for the current level.
 	if (m_timerCountdown <= 0)
 	{
+		m_OutOfTime.play();
 		m_gameStart = false;
 		m_timerCountdown = 60.0f;
 		m_level->ReloadLevel();
@@ -262,8 +320,8 @@ void Player::Collide(GameObject& _collider)
 	// Set our head collider height to be 5 pixels
 	headCollider.height = 5;
 	// Shorten the width to not mess with the other colliders
-	headCollider.width -= 10;
-	headCollider.left += 5;
+	headCollider.width -= 5;
+	headCollider.left += 2.5;
 
 	//Create a collider for the right hand side of the player
 	sf::FloatRect rightCollider = playerCollider;
@@ -569,12 +627,8 @@ void Player::Collide(GameObject& _collider)
 					// Attempt to push!
 					bool pushSucceeded = boxCollider->AttemptPush(targetPos);
 
-					// Yes it is, sticky movement
-					//if (wereTouchingWall == false && m_velocity.x <= 0)
-					{
 						m_velocity.x = 0;
 						m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-					}
 				}
 				else
 				{
@@ -635,22 +689,26 @@ void Player::Collide(GameObject& _collider)
 		// Are the feet touching the top of the platform?
 		if (feetCollider.intersects(spikeTipTopOrBottom))
 		{
+			m_OutOfTime.play();
 			m_level->ReloadLevel();
 		}
 
 		// Is the head touching the bottom of the platform?
 		if (headCollider.intersects(spikeTipTopOrBottom))
 		{
+			m_OutOfTime.play();
 			m_level->ReloadLevel();
 		}
 
 		if (rightCollider.intersects(SpikeTipSides))
 		{
+			m_OutOfTime.play();
 			m_level->ReloadLevel();
 		}
 
 		if (leftCollider.intersects(SpikeTipSides))
 		{
+			m_OutOfTime.play();
 			m_level->ReloadLevel();
 		}
 	}
@@ -892,6 +950,7 @@ void Player::Collide(GameObject& _collider)
 
 				if (wereTouchingWall == false && m_velocity.x >= 0)
 				{
+					m_WaterWalk.play();
 					m_velocity.x = 0;
 					m_sprite.setPosition(waterCollider->getPosition().x + waterCollider->GetBounds().width, m_sprite.getPosition().y);
 				}
@@ -919,6 +978,7 @@ void Player::Collide(GameObject& _collider)
 			{
 				if (wereTouchingWall == false && m_velocity.x <= 0)
 				{
+					m_WaterWalk.play();
 					// If electricity is active and the player touches water, push them to the left until they no longer are touching water (zap movement)
 					m_velocity.x = 0;
 					m_sprite.setPosition(waterCollider->getPosition().x - waterCollider->GetBounds().width, m_sprite.getPosition().y);
@@ -958,6 +1018,12 @@ int Player::GetPotionState()
 bool Player::GetGameStart()
 {
 	return m_gameStart;
+}
+
+bool Player::GetPlayerDirectionRight()
+{
+	// If the player is facing the right this will be true.
+	return m_isPlayerFacingRight;
 }
 
 void Player::ChangeTimer(int _changeBy)

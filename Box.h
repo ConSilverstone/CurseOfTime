@@ -3,6 +3,7 @@
 //Project Includes
 #include "GridObject.h"
 #include "Player.h"
+#include "SFML/Audio.hpp"
 
 class Box : public GridObject
 {
@@ -23,6 +24,9 @@ private:
 	bool m_touchingGround;
 	bool m_touchingWall;
 
-	// Data
+	//Data
 	float m_AmountMoved;
+
+	//Sounds
+	sf::Sound m_boxPush;
 };

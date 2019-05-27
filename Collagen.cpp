@@ -14,9 +14,13 @@ void Collagen::Update(sf::Time _frameTime)
 	// Create a local variable based on the function from player.
 	int PotionState = m_player->GetPotionState();
 	// If the player has selected collagen (represented by 1), then change image.
-	if (PotionState = 1)
+	if (PotionState == 1)
 	{
 		m_sprite.setTexture(AssetManager::GetTexture("graphics/Collagen.png"));
+	}
+	else
+	{
+		m_sprite.setTexture(AssetManager::GetTexture("graphics/CollagenInactive.png"));
 	}
 }
 

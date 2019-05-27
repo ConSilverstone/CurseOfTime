@@ -5,6 +5,7 @@
 #include "GridObject.h"
 
 class Player;
+class CrackedWall;
 
 class Potion : public GridObject
 {
@@ -31,12 +32,15 @@ public:
 	void SetPlayer(Player* _player);
 
 private:
-	
+
 	// Class References
 	Player* m_player;
 
 	//State
 	bool m_touchingSurface;
 	bool m_touchingWall;
+
+	// Sound Effects
+	sf::Sound m_Explosion;
 
 };

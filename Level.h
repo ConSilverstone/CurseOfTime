@@ -6,8 +6,10 @@
 
 // Library Includes
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 class Potion;
+class CrackedWall;
 class Delay;
 
 class Level
@@ -29,8 +31,12 @@ public:
 
 	float GetCellSize();
 	bool MoveObjectTo(GridObject* _toMove, sf::Vector2i _targetPos);
-	bool deleteObjectAt(GridObject* _toDelete);
+	void deletePotionAt(GridObject* _toDelete);
+	void deleteObjectAt(GridObject* _toDelete);
 	std::vector<GridObject*> GetObjectAt(sf::Vector2i _targetPos);
+
+	// Public Level Methods
+	bool SetHasPlayed(bool _hasPlayed);
 
 private:
 
@@ -50,6 +56,7 @@ private:
 	// Class References
 	Player* m_player;
 	Potion* m_potion;
+	CrackedWall* m_cracked;
 	Delay* m_delay;
 	GameObject* m_wall;
 	GameObject* m_timer;
@@ -65,4 +72,12 @@ private:
 	sf::Vector2f m_velocity;
 	bool m_hasGravity;
 	bool m_touchingGround;
+
+	//Music
+	sf::Music LevelViewTheme;
+	sf::Music LevelPlayTheme;
+	sf::Music FinalLevelViewTheme;
+	sf::Music FinalLevelPlayTheme;
+
+	bool m_hasPlayed;
 };

@@ -9,7 +9,8 @@ class Collagen : public GridObject
 public:
 	Collagen();
 
-	void Update(sf::Time _frameTime);
+	// Overriding Methods
+	virtual void Update(sf::Time _frameTime);
 
 	// Public Score Methods
 	void SetPlayer(Player* _player);
