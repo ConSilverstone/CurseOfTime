@@ -15,7 +15,7 @@ void Delay::Update(sf::Time _frameTime)
 	if (m_player != nullptr)
 	{
 		int delay = m_player->GetDelay();
-		m_text.setString("Cooldown: " + std::to_string(delay));
+		m_text.setString("Potion Cooldown: " + std::to_string(delay));
 	}
 }
 

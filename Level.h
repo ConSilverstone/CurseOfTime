@@ -28,6 +28,7 @@ public:
 	void ReloadLevel();
 	void LoadNextLevel();
 	void CreatePotion();
+	void MusicPlayer();
 
 	float GetCellSize();
 	bool MoveObjectTo(GridObject* _toMove, sf::Vector2i _targetPos);

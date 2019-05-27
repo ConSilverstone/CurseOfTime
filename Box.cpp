@@ -363,14 +363,9 @@ void Box::Collide(GameObject& _collider)
 			//If the box is on a spike, don't track its ability to fall as the box is technically always moving downwards.
 			m_AmountMoved = 0;
 
-			//Check if we are falling downward
-			if (wereTouchingSurface == false && m_velocity.y > 0)
-			{
-				//We have touched the ground
-				m_velocity.y = 0;
-				m_sprite.setPosition(m_sprite.getPosition().x, spikeCollider->getPosition().y - m_sprite.getGlobalBounds().height);
-			}
-
+			//We have touched the ground
+			m_velocity.y = 0;
+			m_sprite.setPosition(m_sprite.getPosition().x, spikeCollider->getPosition().y - m_sprite.getGlobalBounds().height);
 		}
 
 		// Is the head touching the bottom of the platform?
@@ -379,14 +374,9 @@ void Box::Collide(GameObject& _collider)
 			// We are now touching the ground!
 			m_touchingWall = true;
 
-			//Check if we are jumping
-			if (wereTouchingWall == false && m_velocity.y < 0)
-			{
-				//We have touched the roof
-				m_velocity.y = 0;
-				m_sprite.setPosition(m_sprite.getPosition().x, spikeCollider->getPosition().y + spikeCollider->GetBounds().height);
-			}
-
+			//We have touched the roof
+			m_velocity.y = 0;
+			m_sprite.setPosition(m_sprite.getPosition().x, spikeCollider->getPosition().y + spikeCollider->GetBounds().height);
 		}
 
 		if (boxRight.intersects(spikeLeft))

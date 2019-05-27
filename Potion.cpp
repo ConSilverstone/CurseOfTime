@@ -6,7 +6,7 @@
 #include "Framework/AssetManager.h"
 
 // Constants
-#define xVelocity 300.0f
+#define xVelocity 200.0f
 #define yVelocity -300.0f
 #define GRAVITY 200.0f
 
@@ -30,18 +30,26 @@ void Potion::Update(sf::Time _frameTime)
 	{
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
-			// What way is the player facing?
-			if (m_player->GetPlayerDirectionRight() == true)
+			if (m_player->GetPlayerDirectionDown() == true)
 			{
-				// He is facing to the right so throw the potion to the right.
-				m_velocity.x = xVelocity;
-				m_velocity.y = yVelocity;
+				// The player is trying to thow a potion straight down
+				m_velocity.y = -yVelocity;
 			}
-			if (m_player->GetPlayerDirectionRight() == false)
+			else 
 			{
-				// He is facing to the left so throw the potion to the left.
-				m_velocity.x = -xVelocity;
-				m_velocity.y = yVelocity;
+				// What way is the player facing?
+				if (m_player->GetPlayerDirectionRight() == true)
+				{
+					// He is facing to the right so throw the potion to the right.
+					m_velocity.x = xVelocity;
+					m_velocity.y = yVelocity;
+				}
+				if (m_player->GetPlayerDirectionRight() == false)
+				{
+					// He is facing to the left so throw the potion to the left.
+					m_velocity.x = -xVelocity;
+					m_velocity.y = yVelocity;
+				}
 			}
 		}
 	}

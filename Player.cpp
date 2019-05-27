@@ -18,6 +18,7 @@
 // Constants
 #define SPEED 200.0f
 #define JUMP_SPEED -370.0f
+#define HydrogenFloat -150.0f
 #define GRAVITY 220.0f
 #define PotionXVelocity 500.0f
 #define PotionYVelocity -300.0f
@@ -29,12 +30,15 @@ Player::Player()
 	, m_playerBumpingSound()
 	, m_touchingSurface(false)
 	, m_touchingWall(false)
-	, m_touchingRoof(false)
 	, m_keyBeenPressed(false)
+	, m_potionBeenThrown(false)
 	, m_timerCountdown(60.00f)
-	, m_keyDelay(3.00f)
+	, m_keyDelay(0.5f)
+	, m_potionDelay(3.0f)
 	, m_numericalPotionState(0)
 	, m_gameStart(false)
+	, m_ShouldWeCheckMusic(true)
+	, m_gameStartBeenChecked(false)
 	, m_potion(nullptr)
 	, potionState(none)
 	, previousPotionState(none)
@@ -45,8 +49,9 @@ Player::Player()
 	, m_Walking()
 	, m_WaterWalk()
 	, m_soundDelay(0.2f)
-	, m_walkingSoundStarted(false)
+	, m_gameSoundStarted(false)
 	, m_isPlayerFacingRight(true)
+	, m_isPlayerThrowingDown(false)
 {
 	m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
 	m_blocksMovement = true;
@@ -73,29 +78,50 @@ void Player::Update(sf::Time _frameTime)
 
 	// Use the keyboard function to check 
 	// which keys are currently held down
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingSurface == true)// && m_touchingRoof == false)
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && m_touchingSurface == true)
 	{
-		m_Jump.play();
-		m_velocity.y = JUMP_SPEED;
-		m_touchingSurface = false;
-		m_gameStart = true;
+		// The player can jump so long as Hydrogen is not active //
+		if (potionState != Hydrogen)
+		{
+			if (m_soundDelay <= 0 && m_touchingSurface == true)
+			{
+				m_Jump.play();
+				m_soundDelay = 0.2f;
+			}
+
+			m_velocity.y = JUMP_SPEED;
+			m_touchingSurface = false;
+			m_gameStart = true;
+			// Start the countdown to the next instance the player jump sound sound be played
+			m_gameSoundStarted = true;
+
+			// Keep track of if the player is trying to throw a potion straight down //
+			m_isPlayerThrowingDown = false;
+		}
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 	{
-		if (m_soundDelay <= 0 && m_touchingSurface == true)
+		// The play can move left or right so long as Hydrogen is not active //
+		if (potionState != Hydrogen)
 		{
-			m_Walking.play();
-			m_soundDelay = 0.2f;
-		}
+			if (m_soundDelay <= 0 && m_touchingSurface == true)
+			{
+				m_Walking.play();
+				m_soundDelay = 0.2f;
+			}
 
-		m_velocity.x = -SPEED;
-		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
-		// The game has now begun
-		m_gameStart = true;
-		// Start the countdown to the next instance the player walking sound sound be played
-		m_walkingSoundStarted = true;
-		// The player is not facing right for the purpose of throwning a potion
-		m_isPlayerFacingRight = false;
+			m_velocity.x = -SPEED;
+			m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandLeft.png"));
+			// The game has now begun
+			m_gameStart = true;
+			// Start the countdown to the next instance the player walking sound sound be played
+			m_gameSoundStarted = true;
+			// The player is not facing right for the purpose of throwning a potion
+			m_isPlayerFacingRight = false;
+
+			// Keep track of if the player is trying to throw a potion straight down //
+			m_isPlayerThrowingDown = false;
+		}
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && m_touchingSurface == false)
 	{
@@ -104,25 +130,35 @@ void Player::Update(sf::Time _frameTime)
 
 		// If the player has pressed this key, it means that they will drop off the roof of they haven't aleady done so. 
 		// This will allow them to jump again.
-		//m_touchingRoof = false;
 		m_touchingSurface = false;
+
+		// Keep track of if the player is trying to throw a potion straight down //
+		m_isPlayerThrowingDown = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 	{
-		if (m_soundDelay <= 0 && m_touchingSurface == true)
+		// The play can move left or right so long as Hydrogen is not active //
+		if (potionState != Hydrogen)
 		{
-			m_Walking.play();
-			m_soundDelay = 0.2f;
-		}
 
-		m_velocity.x = SPEED;
-		m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandRight.png"));
-		// The game has now begun
-		m_gameStart = true;
-		// Start the countdown to the next instance the player walking sound sound be played
-		m_walkingSoundStarted = true;
-		// The player is facing right for the purpose of throwning a potion
-		m_isPlayerFacingRight = true;
+			if (m_soundDelay <= 0 && m_touchingSurface == true)
+			{
+				m_Walking.play();
+				m_soundDelay = 0.2f;
+			}
+
+			m_velocity.x = SPEED;
+			m_sprite.setTexture(AssetManager::GetTexture("graphics/player/playerStandRight.png"));
+			// The game has now begun
+			m_gameStart = true;
+			// Start the countdown to the next instance the player walking sound sound be played
+			m_gameSoundStarted = true;
+			// The player is facing right for the purpose of throwning a potion
+			m_isPlayerFacingRight = true;
+
+			// Keep track of if the player is trying to throw a potion straight down //
+			m_isPlayerThrowingDown = false;
+		}
 	}
 
 	/////////////
@@ -213,20 +249,21 @@ void Player::Update(sf::Time _frameTime)
 	}
 
 	// Throwing a potion
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && potionState == Sulphur && m_keyBeenPressed == false)
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && potionState == Sulphur && m_potionBeenThrown == false)
 	{
 		m_level->CreatePotion();
 		if (m_potion != nullptr)
 			{ 
 				m_potion->SetPosition(m_sprite.getPosition());
 			}
-		m_keyBeenPressed = true;
+		m_potionBeenThrown = true;
 		m_gameStart = true;
 	}
 
 	//Apply gravity to our velocity
 	// If we are not touching any surface on the level or (we are not touching the roof while collagen is active)
-	if (m_touchingSurface == false && m_gameStart == true)
+	// We don't want gravity to kick in if hydrogen is active
+	if (m_touchingSurface == false && m_gameStart == true && potionState != Hydrogen)
 	{
 			float velocityChange = (GRAVITY * _frameTime.asSeconds()) * 2;
 			m_velocity.y += velocityChange;
@@ -242,21 +279,24 @@ void Player::Update(sf::Time _frameTime)
 		m_touchingSurface = false;
 	if (m_touchingWall == true)
 		m_touchingWall = false;
-	if (m_touchingRoof == true)
-		m_touchingRoof = false;
 
 	//If the game has started, down down from 60 seconds
 	if (m_gameStart == true)
 	{
 		m_timerCountdown -= _frameTime.asSeconds();
 	}
-	// A a potion key has been pressed, give a 3 second delay before the player can throw a potion again
+	// A a potion key has been pressed, give a 0.5 second delay before the player can select an element again.
 	if (m_keyBeenPressed == true)
 	{
 		m_keyDelay -= _frameTime.asSeconds();
 	}
+	//If a potion has been thrown, give a 3 second delay before the player can throw a potion again.
+	if (m_potionBeenThrown == true)
+	{
+		m_potionDelay -= _frameTime.asSeconds();
+	}
 	// If the walking sound started, count down to the next interval when the walking sound would be played
-	if (m_walkingSoundStarted == true)
+	if (m_gameSoundStarted == true)
 	{
 		m_soundDelay -= _frameTime.asSeconds();
 	}
@@ -267,13 +307,43 @@ void Player::Update(sf::Time _frameTime)
 		m_gameStart = false;
 		m_timerCountdown = 60.0f;
 		m_level->ReloadLevel();
+		m_ShouldWeCheckMusic = true;
 	}
 
-	// The key delay reaches 0, allow the player to throw a potion or use an element again.
+	// The key delay reaches 0, allow the player to use an element again.
 	if (m_keyDelay <= 0)
 	{
 		m_keyBeenPressed = false;
-		m_keyDelay = 3.0f;
+		m_keyDelay = 0.5f;
+	}
+	// The potion delay reaches 0, allow the player to throw a potion.
+	if (m_potionDelay <= 0)
+	{
+		m_potionBeenThrown = false;
+		m_potionDelay = 3.0f;
+	}
+
+	////////////////
+	// HYDROGEN ////
+	////////////////
+	// If hydrogen IS active, slowing move the player upwards until it is turned off //
+	if (potionState == Hydrogen)
+	{
+		m_velocity.y = HydrogenFloat;
+	}
+
+	///////////////
+	/// MUSIC /////
+	///////////////
+	if (m_ShouldWeCheckMusic == true)
+	{
+		m_level->MusicPlayer();
+		m_ShouldWeCheckMusic = false;
+	}
+	if (m_gameStart == true && m_gameStartBeenChecked == false)
+	{
+		m_level->MusicPlayer();
+		m_gameStartBeenChecked = true;
 	}
 
 	//// Call the update function manually on 
@@ -413,7 +483,6 @@ void Player::Collide(GameObject& _collider)
 			if (potionState == Collagen)
 			{
 				//The player is no longer able to move up and isn't affected by gravity
-				//m_touchingRoof = true;
 				m_touchingSurface = true;
 
 					//Yes it is, sticky movement
@@ -547,31 +616,15 @@ void Player::Collide(GameObject& _collider)
 			if (headCollider.intersects(platformBottom))
 			{
 				// We are now touching the ground!
-				// Is the player's active element collagen?
-
-				if (potionState == Collagen)
+				//Do not reset the player's ability to move up
+				m_touchingSurface = false;
+				// No it is not, normal movement
+				//Check if we are jumping
+				if (wereTouchingSurface == false && m_velocity.y < 0)
 				{
-					//The player is no longer able to move up and isn't affected by gravity
-					//m_touchingRoof = true;
-					m_touchingSurface = true;
-
-					//Yes it is, sticky movement
 					//We have touched the roof
 					m_velocity.y = 0;
 					m_sprite.setPosition(m_sprite.getPosition().x, boxCollider->getPosition().y + boxCollider->GetBounds().height);
-				}
-				else
-				{
-					//Do not reset the player's ability to move up
-					m_touchingSurface = false;
-					// No it is not, normal movement
-					//Check if we are jumping
-					if (wereTouchingSurface == false && m_velocity.y < 0)
-					{
-						//We have touched the roof
-						m_velocity.y = 0;
-						m_sprite.setPosition(m_sprite.getPosition().x, boxCollider->getPosition().y + boxCollider->GetBounds().height);
-					}
 				}
 			}
 
@@ -582,32 +635,14 @@ void Player::Collide(GameObject& _collider)
 				// The target position we want to move the box towards is to the right 1 cell
 				sf::Vector2i targetPos(1, 0);
 
-				//// Is the player's active element collagen?
-
-				if (potionState == Collagen)
-				{
-					// Attempt to push!
-					bool pushSucceeded = boxCollider->AttemptPush(targetPos);
-
-					// Yes it is, sticky movement
-					//Reset the player's ability to move up
-					m_touchingSurface = true;
-
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
-				else
-				{
 					// Attempt to push!
 					bool pushSucceeded = boxCollider->AttemptPush(targetPos);
 
 					//Do not reset the player's ability to move up
 					m_touchingSurface = false;
 					// No it is not, normal movement
-
 					m_velocity.x = 0;
 					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
 			}
 
 			if (leftCollider.intersects(platformRight))
@@ -617,31 +652,14 @@ void Player::Collide(GameObject& _collider)
 				// The target position we want to move the box towards is to the left 1 cell
 				sf::Vector2i targetPos(-1, 0);
 
-				// Is the player's active element collagen?
+				//Do not reset the player's ability to move up
+				m_touchingSurface = false;
+				// Attempt to push!
+				bool pushSucceeded = boxCollider->AttemptPush(targetPos);
 
-				if (potionState == Collagen)
-				{
-					//Reset the player's ability to move up
-					m_touchingSurface = true;
-
-					// Attempt to push!
-					bool pushSucceeded = boxCollider->AttemptPush(targetPos);
-
-						m_velocity.x = 0;
-						m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
-				else
-				{
-					//Do not reset the player's ability to move up
-					m_touchingSurface = false;
-
-					// Attempt to push!
-					bool pushSucceeded = boxCollider->AttemptPush(targetPos);
-
-					// No it isn't, normal movement
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
+				// No it isn't, normal movement
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
 			}
 	}
 
@@ -655,7 +673,7 @@ void Player::Collide(GameObject& _collider)
 			m_gameStart = false;
 			m_timerCountdown = 60.0f;
 			m_level->LoadNextLevel();
-		
+			m_ShouldWeCheckMusic = true;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -691,6 +709,7 @@ void Player::Collide(GameObject& _collider)
 		{
 			m_OutOfTime.play();
 			m_level->ReloadLevel();
+			m_ShouldWeCheckMusic = true;
 		}
 
 		// Is the head touching the bottom of the platform?
@@ -698,18 +717,21 @@ void Player::Collide(GameObject& _collider)
 		{
 			m_OutOfTime.play();
 			m_level->ReloadLevel();
+			m_ShouldWeCheckMusic = true;
 		}
 
 		if (rightCollider.intersects(SpikeTipSides))
 		{
 			m_OutOfTime.play();
 			m_level->ReloadLevel();
+			m_ShouldWeCheckMusic = true;
 		}
 
 		if (leftCollider.intersects(SpikeTipSides))
 		{
 			m_OutOfTime.play();
 			m_level->ReloadLevel();
+			m_ShouldWeCheckMusic = true;
 		}
 	}
 
@@ -764,33 +786,16 @@ void Player::Collide(GameObject& _collider)
 		if (headCollider.intersects(platformBottom))
 		{
 			// We are now touching the ground!
-			// Is the player's active element collagen?
 
-			if (potionState == Collagen)
+			//Do not reset the player's ability to move up
+			m_touchingSurface = false;
+			// No it is not, normal movement
+			//Check if we are jumping
+			if (wereTouchingSurface == false && m_velocity.y < 0)
 			{
-				//Reset the player's ability to move up
-				m_touchingSurface = true;
-				//Yes it is, sticky movement
-				//Check if we are jumping
-				if (wereTouchingSurface == false && m_velocity.y <= 0)
-				{
-					//We have touched the roof
-					m_velocity.y = 0;
-					m_sprite.setPosition(m_sprite.getPosition().x, crackedCollider->getPosition().y + crackedCollider->GetBounds().height);
-				}
-			}
-			else
-			{
-				//Do not reset the player's ability to move up
-				m_touchingSurface = false;
-				// No it is not, normal movement
-				//Check if we are jumping
-				if (wereTouchingSurface == false && m_velocity.y < 0)
-				{
-					//We have touched the roof
-					m_velocity.y = 0;
-					m_sprite.setPosition(m_sprite.getPosition().x, crackedCollider->getPosition().y + crackedCollider->GetBounds().height);
-				}
+				//We have touched the roof
+				m_velocity.y = 0;
+				m_sprite.setPosition(m_sprite.getPosition().x, crackedCollider->getPosition().y + crackedCollider->GetBounds().height);
 			}
 		}
 
@@ -798,61 +803,28 @@ void Player::Collide(GameObject& _collider)
 		{
 			m_touchingWall = true;
 
-			//// Is the player's active element collagen?
-
-			if (potionState == Collagen)
+			//Do not reset the player's ability to move up
+			m_touchingSurface = false;
+			// No it is not, normal movement
+			if (wereTouchingWall == false && m_velocity.x > 0)
 			{
-				// Yes it is, sticky movement
-
-				//Reset the player's ability to move up
-				m_touchingSurface = true;
-
-				if (wereTouchingWall == false && m_velocity.x >= 0)
-				{
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
+				m_velocity.x = 0;
+				m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
 			}
-			else
-			{
-				//Do not reset the player's ability to move up
-				m_touchingSurface = false;
-				// No it is not, normal movement
-				if (wereTouchingWall == false && m_velocity.x > 0)
-				{
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
-			}
+			
 		}
 
 		if (leftCollider.intersects(platformRight))
 		{
 			m_touchingWall = true;
 
-			// Is the player's active element collagen?
-
-			if (potionState == Collagen)
+			//Do not reset the player's ability to move up
+			m_touchingSurface = false;
+			// No it isn't, normal movement
+			if (wereTouchingWall == false && m_velocity.x < 0)
 			{
-				//Reset the player's ability to move up
-				m_touchingSurface = true;
-				// Yes it is, sticky movement
-				if (wereTouchingWall == false && m_velocity.x <= 0)
-				{
 					m_velocity.x = 0;
 					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
-			}
-			else
-			{
-				//Do not reset the player's ability to move up
-				m_touchingSurface = false;
-				// No it isn't, normal movement
-				if (wereTouchingWall == false && m_velocity.x < 0)
-				{
-					m_velocity.x = 0;
-					m_sprite.setPosition(m_previousPosition.x, m_sprite.getPosition().y);
-				}
 			}
 		}
 	}
@@ -894,48 +866,9 @@ void Player::Collide(GameObject& _collider)
 			// We are now touching the ground!
 			m_touchingSurface = true;
 
-			//Check if we are falling downward
-			if (wereTouchingSurface == false && m_velocity.y > 0)
-			{
-				//We have touched the ground
-				m_velocity.y = 0;
-				m_sprite.setPosition(m_sprite.getPosition().x, waterCollider->getPosition().y - m_sprite.getGlobalBounds().height);
-			}
-
-		}
-
-		// Is the head touching the bottom of the platform?
-		if (headCollider.intersects(platformBottom))
-		{
-			// We are now touching the ground!
-			// Is the player's active element collagen?
-
-			if (potionState == Collagen)
-			{
-				//Reset the player's ability to move up
-				m_touchingSurface = true;
-				//Yes it is, sticky movement
-				//Check if we are jumping
-				if (wereTouchingSurface == false && m_velocity.y <= 0)
-				{
-					//We have touched the roof
-					m_velocity.y = 0;
-					m_sprite.setPosition(m_sprite.getPosition().x, waterCollider->getPosition().y + waterCollider->GetBounds().height);
-				}
-			}
-			else
-			{
-				//Do not reset the player's ability to move up
-				m_touchingSurface = false;
-				// No it is not, normal movement
-				//Check if we are jumping
-				if (wereTouchingSurface == false && m_velocity.y < 0)
-				{
-					//We have touched the roof
-					m_velocity.y = 0;
-					m_sprite.setPosition(m_sprite.getPosition().x, waterCollider->getPosition().y + waterCollider->GetBounds().height);
-				}
-			}
+			//We have touched the ground
+			m_velocity.y = 0;
+			m_sprite.setPosition(m_sprite.getPosition().x, waterCollider->getPosition().y - m_sprite.getGlobalBounds().height);
 		}
 
 		if (rightCollider.intersects(platformLeft))
@@ -1007,7 +940,7 @@ int Player::GetTimer()
 
 int Player::GetDelay()
 {
-	return m_keyDelay;
+	return m_potionDelay;
 }
 
 int Player::GetPotionState()
@@ -1026,6 +959,12 @@ bool Player::GetPlayerDirectionRight()
 	return m_isPlayerFacingRight;
 }
 
+bool Player::GetPlayerDirectionDown()
+{
+	// If the player is pressing down this will be true.
+	return m_isPlayerThrowingDown;
+}
+
 void Player::ChangeTimer(int _changeBy)
 {
 	m_timerCountdown += _changeBy;
@@ -1033,7 +972,7 @@ void Player::ChangeTimer(int _changeBy)
 
 void Player::ChangeDelay(int _changeBy)
 {
-	m_keyDelay += _changeBy;
+	m_potionDelay += _changeBy;
 }
 
 void Player::SetPotion(Potion* _potion)

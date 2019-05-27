@@ -123,64 +123,6 @@ void Level::Draw(sf::RenderTarget & _target)
 
 void Level::Update(sf::Time _frameTime)
 {
-	/////////////////
-	/// MUSIC ///////
-	/////////////////
-
-	// Set up the play conditions of the music
-	if (m_player->GetGameStart() == false && m_currentLevel <= 4)
-	{
-		if (LevelViewTheme.Playing)
-		{
-			//Do nothing
-		}
-		else
-		{
-			LevelPlayTheme.stop();
-			LevelViewTheme.play();
-			LevelViewTheme.setLoop(true);
-		}
-	} else if (m_player->GetGameStart() == true && m_currentLevel <= 4)
-	{
-		if (LevelPlayTheme.Playing)
-		{
-			//Do nothing
-		}
-		else
-		{
-			LevelViewTheme.stop();
-			LevelPlayTheme.play();
-			LevelPlayTheme.setLoop(true);
-		}
-	}
-	else if (m_player->GetGameStart() == false && m_currentLevel >= 5)
-	{
-		if (FinalLevelViewTheme.Playing)
-		{
-			//Do nothing
-		}
-		else
-		{
-			LevelPlayTheme.stop();
-			FinalLevelPlayTheme.stop();
-			FinalLevelViewTheme.play();
-			FinalLevelViewTheme.setLoop(true);
-		}
-	} else if (m_player->GetGameStart() == true && m_currentLevel >= 5)
-	{
-		if (FinalLevelPlayTheme.Playing)
-		{
-			//Do nothing
-		}
-		else
-		{
-			LevelViewTheme.stop();
-			FinalLevelViewTheme.stop();
-			FinalLevelPlayTheme.play();
-			FinalLevelPlayTheme.setLoop(true);
-		}
-	}
-
 	// rows
 	for (int y = 0; y < m_contents.size(); ++y)
 	{
@@ -652,6 +594,43 @@ void Level::CreatePotion()
 				}
 			}
 		}
+	}
+}
+
+void Level::MusicPlayer()
+{
+	/////////////////
+	/// MUSIC ///////
+	/////////////////
+
+	// Set up the play conditions of the music
+	if (m_player->GetGameStart() == false && m_currentLevel <= 4)
+	{
+		LevelPlayTheme.stop();
+		LevelViewTheme.play();
+		LevelViewTheme.setLoop(true);
+	}
+	if (m_player->GetGameStart() == true && m_currentLevel <= 4)
+	{
+		LevelViewTheme.stop();
+		LevelPlayTheme.play();
+		LevelPlayTheme.setLoop(true);
+	}
+	if (m_player->GetGameStart() == false && m_currentLevel >= 5)
+	{
+		LevelViewTheme.stop();
+		LevelPlayTheme.stop();
+		FinalLevelPlayTheme.stop();
+		FinalLevelViewTheme.play();
+		FinalLevelViewTheme.setLoop(true);
+	}
+	if (m_player->GetGameStart() == true && m_currentLevel >= 5)
+	{
+		LevelViewTheme.stop();
+		LevelPlayTheme.stop();
+		FinalLevelViewTheme.stop();
+		FinalLevelPlayTheme.play();
+		FinalLevelPlayTheme.setLoop(true);
 	}
 }
 
