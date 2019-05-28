@@ -38,6 +38,7 @@ public:
 
 	// Public Level Methods
 	bool SetHasPlayed(bool _hasPlayed);
+	int GetCurrentLevel();
 
 private:
 

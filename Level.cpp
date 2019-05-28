@@ -640,6 +640,11 @@ bool Level::SetHasPlayed(bool _hasPlayed)
 	return m_hasPlayed;
 }
 
+int Level::GetCurrentLevel()
+{
+	return m_currentLevel;
+}
+
 float Level::GetCellSize()
 {
 	return m_cellSize;

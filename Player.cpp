@@ -189,7 +189,7 @@ void Player::Update(sf::Time _frameTime)
 		}
 	}
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2) && m_level->GetCurrentLevel() >= 2)
 	{
 		// The player has pressed the 1 key, first we need to check if this element is already active.
 		if (potionState == Electricity && m_keyBeenPressed == false)
@@ -209,7 +209,7 @@ void Player::Update(sf::Time _frameTime)
 			m_keyBeenPressed = true;
 		}
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3) && m_level->GetCurrentLevel() >= 3)
 	{
 		// The player has pressed the 1 key, first we need to check if this element is already active.
 		if (potionState == Sulphur && m_keyBeenPressed == false)
@@ -229,7 +229,7 @@ void Player::Update(sf::Time _frameTime)
 			m_keyBeenPressed = true;
 		}
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4) && m_level->GetCurrentLevel() >= 4)
 	{
 		// The player has pressed the 4 key, first we need to check if this element is already active.
 		if (potionState == Hydrogen && m_keyBeenPressed == false)
@@ -307,9 +307,9 @@ void Player::Update(sf::Time _frameTime)
 	{
 		m_OutOfTime.play();
 		m_gameStart = false;
+		m_ShouldWeCheckMusic = true;
 		m_timerCountdown = 60.0f;
 		m_level->ReloadLevel();
-		m_ShouldWeCheckMusic = true;
 	}
 
 	// The key delay reaches 0, allow the player to use an element again.
