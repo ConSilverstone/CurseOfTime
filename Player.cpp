@@ -3,7 +3,6 @@
 # include "Framework/AssetManager.h"
 # include "Level.h"
 # include "SFML/Audio.hpp"
-# include "Diamond.h"
 # include "Exit.h"
 # include "Box.h"
 # include "Wall.h"

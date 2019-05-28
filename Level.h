@@ -50,7 +50,6 @@ private:
 	float m_levelZoom;
 
 	int m_currentLevel;
-	int m_levelDiamonds;
 	int m_currentScore;
 	int m_pendingLoad;
 	bool m_pendingReload;

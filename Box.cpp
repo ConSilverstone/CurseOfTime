@@ -3,7 +3,6 @@
 #include "Framework/AssetManager.h"
 #include "Level.h"
 #include "Player.h"
-#include "Diamond.h"
 #include "Wall.h"
 #include "Spike.h"
 #include "CrackedWall.h"

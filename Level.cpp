@@ -6,7 +6,6 @@
 #include "Wall.h"
 #include "Player.h"
 #include "Box.h"
-#include "Diamond.h"
 #include "Exit.h"
 #include "Spike.h"
 #include "Killzone.h"
@@ -35,7 +34,6 @@ Level::Level()
 	, m_contents()
 	, m_updateList()
 	, m_drawListUI()
-	, m_levelDiamonds(0)
 	, m_pendingLoad()
 	, m_pendingReload(false)
 	, m_velocity(0.0f, 0.0f)
@@ -385,14 +383,6 @@ void Level::LoadLevel(int _levelToLoad)
 					m_contents[y][x].push_back(box);
 					m_collisionList.push_back(std::make_pair(player, box));
 					boxes.push_back(box);
-				}
-				else if (ch == 'D')
-				{
-					Diamond* diamond = new Diamond();
-					diamond->SetLevel(this);
-					diamond->SetGridPosition(x, y);
-					m_contents[y][x].push_back(diamond);
-					m_levelDiamonds++;
 				}
 				else if (ch == 'C')
 				{
