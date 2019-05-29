@@ -10,6 +10,7 @@ class Sulphur : public GridObject
 public:
 	Sulphur();
 
+	// Overiding Methods
 	void Update(sf::Time _frameTime);
 
 	// Public Score Methods
