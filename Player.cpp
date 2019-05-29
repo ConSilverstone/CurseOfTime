@@ -63,9 +63,9 @@ Player::Player()
 	m_ElementSelect.setBuffer(AssetManager::GetSoundBuffer("audio/ElementSelect.wav"));
 	m_Jump.setBuffer(AssetManager::GetSoundBuffer("audio/Jump.wav"));
 	m_Landing.setBuffer(AssetManager::GetSoundBuffer("audio/Land.wav"));
-	m_OutOfTime.setBuffer(AssetManager::GetSoundBuffer("audio/OutofTime.wav"));
+	m_OutOfTime.setBuffer(AssetManager::GetSoundBuffer("audio/PixelCrush.wav"));
 	m_Walking.setBuffer(AssetManager::GetSoundBuffer("audio/Walking.wav"));
-	m_WaterWalk.setBuffer(AssetManager::GetSoundBuffer("audio/WaterWalk.wav"));
+	m_WaterWalk.setBuffer(AssetManager::GetSoundBuffer("audio/WaterZap.wav"));
 }
 
 void Player::Update(sf::Time _frameTime)

@@ -25,7 +25,7 @@ Box::Box()
 	////////////////
 	/// SOUNDS /////
 	////////////////
-	m_boxPush.setBuffer(AssetManager::GetSoundBuffer("audio/BoxPush.wav"));
+	m_boxPush.setBuffer(AssetManager::GetSoundBuffer("audio/PushCrate.wav"));
 }
 
 void Box::Update(sf::Time _frameTime)
